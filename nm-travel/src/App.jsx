@@ -1,38 +1,36 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
-const NM_CALENDAR_ID = "0e55677b2a8c2803fb8a35b81b62f5457eafdcdc9b0bc93ec1a8596b100206c3@group.calendar.google.com";
-
+// ─── Google Calendar link builder ───────────────────────────────────────────
 const gCal = ({ title, start, end, allDay = true, location = "", description = "" }) => {
   const fmt = (d) => d.replace(/-/g, "");
   const dates = allDay ? `${fmt(start)}/${fmt(end)}` : `${start}/${end}`;
-  const params = new URLSearchParams({ action: "TEMPLATE", text: title, dates, details: description, location, src: NM_CALENDAR_ID });
+  const params = new URLSearchParams({ action: "TEMPLATE", text: title, dates, details: description, location });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
-// "Today" detection — matches against itinerary date strings
-const TODAY = new Date();
-const MONTH = TODAY.getMonth(); // 0-indexed
-const DAY = TODAY.getDate();
-const itineraryDateMap = {
-  "Wed, Jun 24": [5,24], "Thu, Jun 25": [5,25], "Fri, Jun 26": [5,26],
-  "Sat, Jun 27": [5,27], "Sun, Jun 28": [5,28], "Mon, Jun 29": [5,29],
-  "Tue, Jun 30": [5,30], "Wed, Jul 1": [6,1], "Thu, Jul 2": [6,2],
-  "Fri, Jul 3": [6,3], "Sat, Jul 4": [6,4], "Sun, Jul 5": [6,5],
-  "Mon, Jul 6": [6,6], "Tue, Jul 7": [6,7], "Wed, Jul 8": [6,8],
-  "Thu, Jul 9": [6,9], "Fri, Jul 10": [6,10], "Sat, Jul 11": [6,11],
-  "Sun, Jul 12": [6,12], "Mon, Jul 13": [6,13], "Tue–Sat, Jul 14–18": [6,14],
-  "Sun, Jul 19": [6,19], "Mon, Jul 20": [6,20], "Tue, Jul 21": [6,21],
-  "Wed, Jul 22": [6,22], "Thu, Jul 23": [6,23], "Fri, Jul 24": [6,24],
-  "Sat, Jul 25": [6,25], "Sun–Mon, Jul 26–27": [6,26],
-};
-const isToday = (dateStr) => {
-  const d = itineraryDateMap[dateStr];
-  return d && d[0] === MONTH && d[1] === DAY;
+// Build a Google Calendar invite URL pre-loaded with both guests
+const gCalWithGuests = ({ title, date, startTime, endTime, location, description }) => {
+  // date: "2026-07-09", startTime: "20:30", endTime: "22:30"
+  const fmt = (d) => d.replace(/-/g, "");
+  const pad = (s) => s.replace(":", "");
+  const start = startTime ? `${fmt(date)}T${pad(startTime)}00` : fmt(date);
+  const end = endTime ? `${fmt(date)}T${pad(endTime)}00` : fmt(date);
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${start}/${end}`,
+    details: description || "",
+    location: location || "",
+    add: "nickkislinger@gmail.com,miriam@example.com",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
+// ─── CALENDAR EVENTS ─────────────────────────────────────────────────────────
 const calendarEvents = [
-  { category: "All", events: [] }, // populated below
   { category: "Flights", events: [
+    { title: "✈️ DL 1729 · LAX → Denver", start: "20260601T201900Z", end: "20260602T054400Z", allDay: false, location: "Los Angeles International Airport", description: "Main Extra · Nonstop · Conf GS34NP · Nick Only" },
+    { title: "✈️ DL 2176 · Denver → LAX", start: "20260602T203000Z", end: "20260602T230400Z", allDay: false, location: "Denver International Airport", description: "Main Extra · Nonstop · Conf GS34NP · Nick Only" },
     { title: "✈️ DL 914 · LAX → MSP", start: "20260624T193500Z", end: "20260625T011300Z", allDay: false, location: "Los Angeles International Airport", description: "Delta First · Seat 2D · Conf G4DQXX" },
     { title: "✈️ DL 162 · MSP → Amsterdam", start: "20260625T013000Z", end: "20260625T151000Z", allDay: false, location: "Minneapolis-St Paul Airport", description: "Delta One · Seat 5J · Conf G4DQXX" },
     { title: "✈️ DL 9185 · AMS → Athens", start: "20260625T102500Z", end: "20260625T143000Z", allDay: false, location: "Amsterdam Schiphol Airport", description: "KLM Economy · Seat 8F · Conf G4DQXX" },
@@ -43,22 +41,22 @@ const calendarEvents = [
     { title: "✈️ DL 1045 · LAX → Seattle", start: "20260713T190900Z", end: "20260713T215500Z", allDay: false, location: "Los Angeles International Airport", description: "SkyMiles Award · Conf JMFNIL · Nick & Miriam" },
   ]},
   { category: "Hotels", events: [
-    { title: "🏨 Folies Corfu Town Hotel Apartments", start: "2026-06-25", end: "2026-06-29", allDay: true, location: "Alepou Xabai, Corfu, Greece", description: "Team · 5 studios · Conf #5071.167.071 · PIN 1546 · NON-REFUNDABLE" },
+    { title: "🏨 Hotel 1000, Seattle", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "1000 1st Ave, Seattle, WA", description: "Nick & Miriam · 1 King City View · Hyatt free night · Conf #40023B18869296" },
     { title: "🏝️ Dreams Corfu Resort & Spa", start: "2026-06-26", end: "2026-06-29", allDay: true, location: "Gouvia, Corfu, Greece", description: "Nick & Miriam · Bungalow Garden View · All-inclusive · Conf #42609271" },
     { title: "🏛️ Monument Athens", start: "2026-06-29", end: "2026-07-01", allDay: true, location: "Kalamida 11, Athens, Greece", description: "Nick & Miriam · Sepia room · Breakfast included · Conf #48859741" },
-    { title: "🌋 Villa Don Giovanni, Taormina", start: "2026-07-01", end: "2026-07-06", allDay: true, location: "Via Nazionale - Mazzaro, Taormina, Sicily", description: "Nick + Team · Conf #6775.843.228 · PIN 4148 · Cash on arrival · Call +39 0942 24536 72hrs before" },
+    { title: "🌋 Villa Don Giovanni, Taormina", start: "2026-07-01", end: "2026-07-06", allDay: true, location: "Via Nazionale - Mazzarò, Taormina, Sicily", description: "Nick + Team · Conf #6775.843.228 · PIN 4148 · Cash on arrival · Private pool" },
     { title: "🌊 Villa Cala Bitta, Sardinia", start: "2026-07-06", end: "2026-07-13", allDay: true, location: "Vaddi di Jatta 33, Arzachena, Sardinia", description: "Nick + Team · Conf #5060.372.552 · PIN 1915 · Private pool · Costa Smeralda" },
     { title: "🌲 Orcas Island Accommodation", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Nick, Miriam + Family" },
-    { title: "⛰️ Aspen Hotel (TBD)", start: "2026-07-23", end: "2026-07-27", allDay: true, location: "Aspen, CO", description: "Nick & Miriam · Big Green Sat Jul 25 · TO BOOK · Options: Hotel Jerome, Little Nell, Limelight" },
   ]},
   { category: "Trip Segments", events: [
+    { title: "🏔️ Denver, CO", start: "2026-06-01", end: "2026-06-03", allDay: true, location: "Denver, CO", description: "Nick Only · Quick trip · DL 1729/2176 · Conf GS34NP" },
     { title: "🇬🇷 Corfu, Greece", start: "2026-06-25", end: "2026-06-29", allDay: true, location: "Corfu, Greece", description: "Team base · Dreams Corfu for Nick & Miriam from Jun 26 (#42609271) · Folies for team (#5071.167.071)" },
     { title: "🏛️ Athens, Greece", start: "2026-06-29", end: "2026-07-01", allDay: true, location: "Athens, Greece", description: "Nick & Miriam · Acropolis tour · Monument Athens (#48859741)" },
     { title: "🌋 Taormina, Sicily", start: "2026-07-01", end: "2026-07-06", allDay: true, location: "Taormina, Sicily, Italy", description: "Nick + Team · Villa Don Giovanni · Client events Jul 4–5" },
     { title: "🌊 Sardinia, Italy", start: "2026-07-06", end: "2026-07-13", allDay: true, location: "Sardinia, Italy", description: "Nick + Team · Villa Cala Bitta · Client events Jul 10–11 · Miriam's birthday Jul 9" },
     { title: "🌲 Orcas Island, WA", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Family vacation · Nick, Miriam + family" },
     { title: "🏡 Vashon — Savannah & Noah", start: "2026-07-19", end: "2026-07-21", allDay: true, location: "22032 Dockton Rd SW, Vashon, WA", description: "Visit with Savannah & Noah" },
-    { title: "🏡 Molly & Miles", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "TBD — confirm address", description: "Staying with Molly & Miles" },
+    { title: "🏙️ Seattle — Hotel 1000", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "1000 1st Ave, Seattle, WA", description: "Nick & Miriam · Molly & Miles visit · Hotel 1000 (#40023B18869296)" },
     { title: "⛰️ Aspen, CO", start: "2026-07-23", end: "2026-07-28", allDay: true, location: "Aspen, CO", description: "Nick & Miriam · Big Green Sat Jul 25" },
   ]},
   { category: "Key Events", events: [
@@ -70,28 +68,28 @@ const calendarEvents = [
     { title: "🌿 Big Green — Aspen", start: "20260725T150000Z", end: "20260725T230000Z", allDay: false, location: "Aspen, CO", description: "Nick & Miriam hosting a table" },
   ]},
   { category: "Activities", events: [
-    { title: "🏛️ Acropolis & Parthenon Guided Tour", start: "2026-06-30", end: "2026-07-01", allDay: true, location: "Acropolis, Athens, Greece", description: "Book timed entry in advance · Acropolis Museum · Plaka neighborhood lunch" },
-    { title: "🏺 Ancient Agora / Monastiraki Market", start: "2026-07-01", end: "2026-07-02", allDay: true, location: "Monastiraki, Athens, Greece", description: "Morning before checkout from Monument Athens" },
-    { title: "🌋 Taormina & Mt. Etna — Free Day", start: "2026-07-02", end: "2026-07-03", allDay: true, location: "Taormina / Mt. Etna, Sicily", description: "Available — explore Taormina or Mt. Etna excursion" },
-    { title: "🌋 Taormina — Free Day", start: "2026-07-03", end: "2026-07-04", allDay: true, location: "Taormina, Sicily", description: "Available — explore Taormina" },
-    { title: "🗺️ Noto Day Trip / Explore Sardinia", start: "2026-07-07", end: "2026-07-08", allDay: true, location: "Sardinia, Italy", description: "Noto day trip or explore Sardinia coastline" },
-    { title: "🌊 Sardinia — Free Day", start: "2026-07-08", end: "2026-07-09", allDay: true, location: "Sardinia, Italy", description: "Available — explore Sardinia" },
-    { title: "⛴️ Ferry to Orcas Island", start: "20260713T235500Z", end: "20260714T020000Z", allDay: false, location: "Anacortes Ferry Terminal, WA", description: "Nick, Miriam + family · After DL 1045 arrives SEA 2:55pm" },
-    { title: "🌲 Orcas Island Family Vacation", start: "2026-07-14", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Nick, Miriam + family · Hiking, kayaking, exploring" },
-    { title: "🏔️ Aspen — Free Day", start: "2026-07-24", end: "2026-07-25", allDay: true, location: "Aspen, CO", description: "Available — Aspen" },
-    { title: "🏔️ Aspen — Free Days", start: "2026-07-26", end: "2026-07-28", allDay: true, location: "Aspen, CO", description: "Available — Aspen" },
+    { title: "🏛️ Acropolis & Parthenon Tour", start: "2026-06-30", end: "2026-07-01", allDay: true, location: "Acropolis, Athens, Greece", description: "Book timed entry in advance · Acropolis Museum · Plaka neighborhood lunch" },
+    { title: "🌋 Taormina / Mt. Etna Explore", start: "2026-07-02", end: "2026-07-04", allDay: true, location: "Taormina, Sicily", description: "Free days — explore Taormina old town, consider Mt. Etna excursion" },
+    { title: "🚤 Explore Sardinia / Noto Day Trip", start: "2026-07-07", end: "2026-07-09", allDay: true, location: "Sardinia, Italy", description: "Free days — boat trips, beaches, possible Noto day trip" },
+    { title: "🌲 Orcas Island — Family Vacation", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Nick, Miriam + family · Hiking, kayaking, ferry, Rosario Resort area" },
+    { title: "⛰️ Aspen — Free Days", start: "2026-07-24", end: "2026-07-28", allDay: true, location: "Aspen, CO", description: "Hiking, biking, Maroon Bells, restaurants — before/after Big Green Jul 25" },
   ]},
   { category: "Reminders", events: [
-    { title: "📞 Call Villa Don Giovanni — 72hrs Before Arrival", start: "2026-06-26", end: "2026-06-27", allDay: true, location: "", description: "Call +39 0942 24536 · Confirm arrival Jun 29 · €500 deposit · Cash on arrival reminder" },
-    { title: "📱 XZ2510 Online Check-In Opens", start: "2026-07-11", end: "2026-07-12", allDay: true, location: "", description: "Online check-in for Aeroitalia XZ2510 (AHO → FCO, Jul 12 7:10am) · Free online vs €35 at airport · Do 3+ hrs before" },
-    { title: "⏰ Depart Villa Cala Bitta for Alghero", start: "20260712T023000Z", end: "20260712T030000Z", allDay: false, location: "Villa Cala Bitta, Sardinia", description: "130km drive to Alghero Airport (AHO) · XZ2510 departs 7:10am · Allow 2.5hrs" },
+    { title: "📞 Call Villa Don Giovanni (72hrs before Jun 29)", start: "20260626T150000Z", end: "20260626T153000Z", allDay: false, location: "Phone", description: "+39 0942 24536 · Confirm arrival, €500 cash deposit, key collection" },
+    { title: "📱 Aeroitalia XZ2510 Online Check-In", start: "20260712T040000Z", end: "20260712T041500Z", allDay: false, location: "Online / App", description: "Check in 3hrs before 7:10am departure (4:10am) · Free online, €35 at airport · Conf N6358P" },
+    { title: "⛴️ Water Taxi — Pier 50 → Vashon", start: "20260719T165500Z", end: "20260719T172700Z", allDay: false, location: "Pier 50, Seattle, WA", description: "King County Water Taxi · Departs 9:55am · Crossing ~22 min · Return from Vashon: 10:35am, 12:00pm, 1:30pm, 3:20pm, 4:30pm, 5:50pm, 7:05pm" },
   ]},
 ];
 
-// Populate "All" category with events from all other categories sorted by start
-calendarEvents[0].events = calendarEvents.slice(1).flatMap(c => c.events).sort((a, b) => a.start > b.start ? 1 : -1);
-
+// ─── ITINERARY DATA ───────────────────────────────────────────────────────────
 const itinerary = [
+  { date: "Mon, Jun 1", location: "Los Angeles → Denver", icon: "✈️", type: "travel", items: [
+    { label: "DL 1729 · LAX 1:19pm → DEN 5:44pm · Main Extra", tag: "NICK · GS34NP", tagColor: "#5b8fa8" },
+    { label: "Denver overnight" },
+  ]},
+  { date: "Tue, Jun 2", location: "Denver → Los Angeles", icon: "✈️", type: "travel", items: [
+    { label: "DL 2176 · DEN 1:30pm → LAX 3:04pm · Main Extra", tag: "NICK · GS34NP", tagColor: "#5b8fa8" },
+  ]},
   { date: "Wed, Jun 24", location: "Los Angeles → Minneapolis → Amsterdam", icon: "✈️", type: "travel", items: [
     { label: "DL 914 · LAX 12:35pm → MSP 6:13pm · Seat 2D · Delta First", tag: "NICK · G4DQXX", tagColor: "#5b8fa8" },
     { label: "DL 162 · MSP 7:50pm → Amsterdam (arrives Thu 11:10am) · Seat 5J · Delta One", tag: "NICK · G4DQXX", tagColor: "#5b8fa8" },
@@ -114,7 +112,7 @@ const itinerary = [
   ]},
   { date: "Mon, Jun 29", location: "Corfu → Athens (Nick & Miriam) | Team → Taormina", icon: "✈️", type: "travel", items: [
     { label: "Dreams Corfu checkout 11am" },
-    { label: "Nick & Miriam: Fly CFU → ATH · check Aegean / Sky Express / easyJet", tag: "BOOK", tagColor: "#e8a735" },
+    { label: "Nick & Miriam: Fly CFU → ATH" },
     { label: "Check in: Monument Athens · Sepia room · 3pm", tag: "✓ #48859741", tagColor: "#2d6a4f" },
     { label: "Team: Fly CFU → CTA → Villa Don Giovanni, Taormina", tag: "✓ #6775.843.228", tagColor: "#2d6a4f" },
   ]},
@@ -126,7 +124,7 @@ const itinerary = [
   { date: "Wed, Jul 1", location: "Athens → Taormina, Sicily", icon: "✈️", type: "travel", items: [
     { label: "Morning: Ancient Agora or Monastiraki market" },
     { label: "Monument Athens checkout 11am" },
-    { label: "Fly ATH → CTA · check Aegean / Volotea / Ryanair", tag: "BOOK", tagColor: "#e8a735" },
+    { label: "Fly ATH → CTA → Taormina" },
     { label: "Join team at Villa Don Giovanni", tag: "✓ #6775.843.228", tagColor: "#2d6a4f" },
   ]},
   { date: "Thu, Jul 2", location: "Taormina, Sicily", icon: "🌋", type: "free", items: [{ label: "Available — Taormina / Mt. Etna" }]},
@@ -135,7 +133,7 @@ const itinerary = [
   { date: "Sun, Jul 5", location: "Taormina, Sicily", icon: "🤝", type: "event", items: [{ label: "Client events (full day)", tag: "WORK" }]},
   { date: "Mon, Jul 6", location: "Taormina → Sardinia", icon: "✈️", type: "travel", items: [
     { label: "Villa Don Giovanni checkout 8–10am" },
-    { label: "Fly CTA → OLB · check Ryanair / Volotea / ITA Airways", tag: "BOOK", tagColor: "#e8a735" },
+    { label: "Fly CTA → OLB/Sardinia" },
     { label: "Check in: Villa Cala Bitta, Arzachena · 5–8pm", tag: "✓ #5060.372.552", tagColor: "#2d6a4f" },
   ]},
   { date: "Tue, Jul 7", location: "Sardinia", icon: "🌊", type: "leisure", items: [{ label: "Noto day trip or explore Sardinia" }]},
@@ -162,17 +160,23 @@ const itinerary = [
   { date: "Tue–Sat, Jul 14–18", location: "Orcas Island, WA", icon: "🌲", type: "leisure", items: [{ label: "Family vacation — Orcas Island" }]},
   { date: "Sun, Jul 19", location: "Orcas Island → Vashon Island, WA", icon: "⛴️", type: "travel", items: [
     { label: "Visit Savannah & Noah · 22032 Dockton Rd SW, Vashon, WA" },
+    { label: "King County Water Taxi — Pier 50 (Seattle) → Vashon · ~22 min crossing" },
+    { label: "Departs Pier 50: 9:55am · 11:15am · 12:45pm · 2:45pm · 3:55pm · 5:10pm · 6:30pm" },
+    { label: "Return from Vashon: 10:35am · 12:00pm · 1:30pm · 3:20pm · 4:30pm · 5:50pm · 7:05pm", tag: "Jul 19 SCHEDULE", tagColor: "#5b8fa8" },
   ]},
   { date: "Mon, Jul 20", location: "Vashon Island — Savannah & Noah", icon: "🏡", type: "leisure", items: [
     { label: "Full day with Savannah & Noah" },
   ]},
-  { date: "Tue, Jul 21", location: "→ Molly & Miles", icon: "🏡", type: "leisure", items: [
-    { label: "Travel to Molly & Miles", tag: "CONFIRM ADDRESS", tagColor: "#e06b3a" },
+  { date: "Tue, Jul 21", location: "Seattle, WA — Hotel 1000", icon: "🏙️", type: "leisure", items: [
+    { label: "Hotel 1000 — Check-in · 4:00pm · 1000 1st Ave", tag: "✓ #40023B18869296", tagColor: "#2d6a4f" },
+    { label: "Visit with Molly & Miles" },
   ]},
-  { date: "Wed, Jul 22", location: "Molly & Miles", icon: "🏡", type: "leisure", items: [{ label: "Full day with Molly & Miles" }]},
-  { date: "Thu, Jul 23", location: "→ Aspen, CO", icon: "⛰️", type: "travel", items: [
-    { label: "Fly SEA → ASE via DEN or SLC · check Delta / United / AA", tag: "BOOK FLIGHT", tagColor: "#e8a735" },
-    { label: "Check in: Aspen hotel · options: Hotel Jerome, Little Nell, Limelight", tag: "BOOK HOTEL", tagColor: "#e8a735" },
+  { date: "Wed, Jul 22", location: "Seattle, WA", icon: "🏙️", type: "leisure", items: [
+    { label: "Full day with Molly & Miles · Hotel 1000" },
+  ]},
+  { date: "Thu, Jul 23", location: "Seattle → Aspen, CO", icon: "⛰️", type: "travel", items: [
+    { label: "Hotel 1000 checkout · Fly SEA → ASE via DEN or SLC", tag: "BOOK FLIGHT", tagColor: "#e8a735" },
+    { label: "Check in: Aspen hotel", tag: "BOOK HOTEL", tagColor: "#e8a735" },
   ]},
   { date: "Fri, Jul 24", location: "Aspen, CO", icon: "🏔️", type: "free", items: [{ label: "Available — Aspen" }]},
   { date: "Sat, Jul 25", location: "Aspen, CO — Big Green", icon: "🌿", type: "special", items: [
@@ -181,7 +185,14 @@ const itinerary = [
   { date: "Sun–Mon, Jul 26–27", location: "Aspen, CO", icon: "🏔️", type: "free", items: [{ label: "Available — Aspen" }]},
 ];
 
+// ─── FLIGHTS ──────────────────────────────────────────────────────────────────
 const flights = [
+  { direction: "LAX → DENVER", date: "Mon Jun 1", conf: "GS34NP", pax: "NICK ONLY", status: "confirmed",
+    segments: [{ flight: "DL 1729", route: "LAX → DEN", depart: "1:19pm", arrive: "5:44pm", cabin: "Main Extra", seat: "—" }],
+    notes: "Quick Denver trip. Returns Tue Jun 2." },
+  { direction: "DENVER → LAX", date: "Tue Jun 2", conf: "GS34NP", pax: "NICK ONLY", status: "confirmed",
+    segments: [{ flight: "DL 2176", route: "DEN → LAX", depart: "1:30pm", arrive: "3:04pm", cabin: "Main Extra", seat: "—" }],
+    notes: "Return from Denver." },
   { direction: "OUTBOUND", date: "Wed Jun 24 → Thu Jun 25", conf: "G4DQXX", pax: "NICK ONLY", status: "confirmed",
     segments: [
       { flight: "DL 914",  route: "LAX → MSP",  depart: "12:35pm", arrive: "6:13pm",    cabin: "Delta First",    seat: "2D" },
@@ -200,20 +211,21 @@ const flights = [
   { direction: "LAX → SEATTLE", date: "Mon Jul 13", conf: "JMFNIL", pax: "NICK & MIRIAM", status: "confirmed",
     segments: [{ flight: "DL 1045", route: "LAX → SEA", depart: "12:09pm", arrive: "2:55pm", cabin: "SkyMiles Award", seat: "—" }],
     notes: "Arrive Seattle 2:55pm → ferry to Orcas Island" },
-  { direction: "CFU → ATH", date: "Mon Jun 29", conf: null, pax: "NICK & MIRIAM", status: "pending",
+  { direction: "PENDING", date: "Mon Jun 29", conf: null, pax: "NICK & MIRIAM", status: "pending",
     segments: [{ flight: "TBD", route: "CFU → ATH", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Nick & Miriam to Athens for Monument check-in 3pm. Check: Aegean / Sky Express / easyJet." },
-  { direction: "ATH → CTA", date: "Wed Jul 1", conf: null, pax: "NICK & MIRIAM", status: "pending",
+    notes: "Nick & Miriam to Athens for Monument check-in. Options: Aegean or Sky Express." },
+  { direction: "PENDING", date: "Wed Jul 1", conf: null, pax: "NICK & MIRIAM", status: "pending",
     segments: [{ flight: "TBD", route: "ATH → CTA", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Nick & Miriam Athens → Catania → Taormina. Check: Aegean / Volotea / Ryanair." },
-  { direction: "CTA → OLB", date: "Mon Jul 6", conf: null, pax: "FULL TEAM", status: "pending",
+    notes: "Nick & Miriam Athens → Catania → Taormina. Options: Aegean, easyJet, Volotea." },
+  { direction: "PENDING", date: "Mon Jul 6", conf: null, pax: "FULL TEAM", status: "pending",
     segments: [{ flight: "TBD", route: "CTA → OLB", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Full team Catania → Olbia/Sardinia. Check: Ryanair / Volotea / ITA Airways." },
-  { direction: "→ ASPEN", date: "Thu Jul 23", conf: null, pax: "NICK & MIRIAM", status: "pending",
+    notes: "Full team Catania → Olbia/Sardinia. Options: Ryanair, easyJet, Volotea." },
+  { direction: "PENDING", date: "Thu Jul 23", conf: null, pax: "NICK & MIRIAM", status: "pending",
     segments: [{ flight: "TBD", route: "SEA → ASE", depart: "TBD", arrive: "TBD", cabin: "TBD", seat: "—" }],
-    notes: "Vashon/Seattle → Aspen via DEN or SLC. Check: Delta / United / American." },
+    notes: "Seattle → Aspen via DEN or SLC. Options: United, Delta, American with connection." },
 ];
 
+// ─── HOTELS ───────────────────────────────────────────────────────────────────
 const hotels = [
   { name: "Folies Corfu Town Hotel Apartments", who: "TEAM", location: "Alepou Xabai, Corfu, Greece", checkin: "Thu Jun 25 · 3pm", checkout: "Mon Jun 29 · 11am", nights: 4, conf: "#5071.167.071 · PIN 1546", price: "~US$3,039 (5 studios)", status: "confirmed", cancel: "⚠️ NON-REFUNDABLE", notes: "Nick has a studio here but staying at Dreams instead." },
   { name: "Dreams Corfu Resort & Spa", who: "Nick & Miriam", location: "Gouvia, Corfu, GR 49100", checkin: "Fri Jun 26 · 3pm", checkout: "Mon Jun 29 · 11am", nights: 3, conf: "#42609271", price: "€598/night · All-inclusive", status: "confirmed", cancel: "1 day prior", notes: "Bungalow Garden View · Hyatt Discoverist" },
@@ -221,33 +233,38 @@ const hotels = [
   { name: "Villa Don Giovanni Taormina Mare", who: "Nick + Team (5 adults)", location: "Via Nazionale - Mazzarò, 98039 Taormina", checkin: "Mon Jun 29 · 3–8pm", checkout: "Mon Jul 6 · 8–10am", nights: 7, conf: "#6775.843.228 · PIN 4148", price: "~US$11,527 · No meals", status: "confirmed", cancel: "50% on cancel", notes: "⚠️ Cash on arrival · Call 72hrs before: +39 0942 24536 · €500 deposit · Nick arrives Jul 1" },
   { name: "Villa Cala Bitta, Sardinia", who: "Nick + Team (5 adults)", location: "Vaddi di Jatta 33, 07021 Arzachena", checkin: "Mon Jul 6 · 5–8pm", checkout: "Mon Jul 13 · 10am", nights: 7, conf: "#5060.372.552 · PIN 1915", price: "~US$12,329 · No meals", status: "confirmed", cancel: "⚠️ 100% after Jun 21", notes: "Private pool · Sea view · Costa Smeralda" },
   { name: "Orcas Island accommodation", who: "Nick, Miriam + Family", location: "Orcas Island, WA", checkin: "Mon Jul 13", checkout: "Sun Jul 19", nights: 6, conf: "Booked", price: "—", status: "confirmed", cancel: "—", notes: "Family vacation" },
-  { name: "Aspen hotel", who: "Nick & Miriam", location: "Aspen, CO", checkin: "Thu Jul 23", checkout: "Mon Jul 27", nights: 4, conf: "—", price: "—", status: "pending", cancel: "—", notes: "Big Green Sat Jul 25 · Options: Hotel Jerome, Little Nell, Limelight Hotel" },
+  { name: "Hotel 1000 (Unbound Collection by Hyatt)", who: "Nick & Miriam", location: "1000 1st Ave, Seattle, WA", checkin: "Tue Jul 21 · 4pm", checkout: "Thu Jul 23 · 11am", nights: 2, conf: "#40023B18869296", price: "Hyatt free night award", status: "confirmed", cancel: "Cancel night-before by 11:59pm", notes: "1 King City View · Rosebay cocktail bar in hotel · Molly & Miles visit" },
+  { name: "Aspen hotel", who: "Nick & Miriam", location: "Aspen, CO", checkin: "Thu Jul 23", checkout: "Mon Jul 27", nights: 4, conf: "—", price: "—", status: "pending", cancel: "—", notes: "Big Green Sat Jul 25" },
 ];
 
-const actionItems = [
-  { status: "pending", label: "Online check-in for XZ2510 (3hrs before Jul 12 departure) — €35 fee at airport" },
-  { status: "pending", label: "Flight: SEA → ASE (Thu Jul 23) · Nick & Miriam · check Delta / United / AA" },
-  { status: "pending", label: "Aspen hotel (Jul 23–27) · options: Hotel Jerome, Little Nell, Limelight" },
-  { status: "pending", label: "Confirm Molly & Miles address (Jul 21–22)" },
-  { status: "pending", label: "Flight: CFU → ATH (Jun 29) — Nick & Miriam · check Aegean / Sky Express / easyJet" },
-  { status: "pending", label: "Flight: ATH → CTA (Jul 1) — Nick & Miriam · check Aegean / Volotea / Ryanair" },
-  { status: "pending", label: "Flight: CTA → OLB (Jul 6) — full team · check Ryanair / Volotea / ITA" },
-  { status: "pending", label: "Call Villa Don Giovanni 72hrs before Jun 29: +39 0942 24536" },
-  { status: "waiting", label: "Team dinner restaurant — awaiting Austin (Jun 28)" },
-  { status: "done",    label: "Matsuhisa · Jul 9 · 8:30–10:30pm · Conf OLBLC-7LP3473BD2KD" },
-  { status: "done",    label: "Savannah & Noah · 22032 Dockton Rd SW, Vashon Island, WA" },
-  { status: "done",    label: "DL 1045 LAX→SEA Jul 13 · Conf JMFNIL · Nick & Miriam" },
-  { status: "done",    label: "Aegean A3 286 ATH→CFU Jun 25 · Seat 12A · Conf 8SKKV9" },
-  { status: "done",    label: "Aeroitalia XZ2510 AHO→FCO Jul 12 · Seat 1C · Conf N6358P" },
-  { status: "done",    label: "Return DL 215 + DL 500 FCO→ATL→LAX Jul 12 · Conf G4RYXA" },
-  { status: "done",    label: "Dreams Corfu Jun 26–29 · Conf #42609271" },
-  { status: "done",    label: "Monument Athens Jun 29–Jul 1 · Conf #48859741" },
-  { status: "done",    label: "Folies Corfu (team) Jun 25–29 · Conf #5071.167.071" },
-  { status: "done",    label: "Villa Don Giovanni Taormina Jun 29–Jul 6 · Conf #6775.843.228" },
-  { status: "done",    label: "Villa Cala Bitta Sardinia Jul 6–13 · Conf #5060.372.552" },
-  { status: "done",    label: "Orcas Island accommodation" },
+// ─── ACTION ITEMS (initial seed — runtime state handles updates) ──────────────
+const initialActions = [
+  { id: 1, status: "pending", label: "Online check-in for XZ2510 (3hrs before Jul 12 departure) — €35 fee at airport" },
+  { id: 2, status: "pending", label: "Flight: SEA → ASE (Thu Jul 23) · Nick & Miriam" },
+  { id: 3, status: "pending", label: "Aspen hotel (Jul 23–27)" },
+  { id: 4, status: "pending", label: "Flight: CFU → ATH (Jun 29) — Nick & Miriam" },
+  { id: 5, status: "pending", label: "Flight: ATH → CTA (Jul 1) — Nick & Miriam" },
+  { id: 6, status: "pending", label: "Flight: CTA → OLB (Jul 6) — full team" },
+  { id: 7, status: "pending", label: "Call Villa Don Giovanni 72hrs before Jun 29: +39 0942 24536" },
+  { id: 8, status: "waiting", label: "Team dinner restaurant — awaiting Austin (Jun 28)" },
+  { id: 9, status: "waiting", label: "Confirm Molly & Miles address (Jul 21–22)" },
+  { id: 10, status: "done", label: "Hotel 1000, Seattle (Jul 21–23) · Conf #40023B18869296 · Hyatt free night" },
+  { id: 11, status: "done", label: "DL 1729 + DL 2176 Denver trip Jun 1–2 · Conf GS34NP" },
+  { id: 12, status: "done", label: "Matsuhisa · Jul 9 · 8:30–10:30pm · Conf OLBLC-7LP3473BD2KD" },
+  { id: 13, status: "done", label: "Savannah & Noah · 22032 Dockton Rd SW, Vashon Island, WA" },
+  { id: 14, status: "done", label: "DL 1045 LAX→SEA Jul 13 · Conf JMFNIL · Nick & Miriam" },
+  { id: 15, status: "done", label: "Aegean A3 286 ATH→CFU Jun 25 · Seat 12A · Conf 8SKKV9" },
+  { id: 16, status: "done", label: "Aeroitalia XZ2510 AHO→FCO Jul 12 · Seat 1C · Conf N6358P" },
+  { id: 17, status: "done", label: "Return DL 215 + DL 500 FCO→ATL→LAX Jul 12 · Conf G4RYXA" },
+  { id: 18, status: "done", label: "Dreams Corfu Jun 26–29 · Conf #42609271" },
+  { id: 19, status: "done", label: "Monument Athens Jun 29–Jul 1 · Conf #48859741" },
+  { id: 20, status: "done", label: "Folies Corfu (team) Jun 25–29 · Conf #5071.167.071" },
+  { id: 21, status: "done", label: "Villa Don Giovanni Taormina Jun 29–Jul 6 · Conf #6775.843.228" },
+  { id: 22, status: "done", label: "Villa Cala Bitta Sardinia Jul 6–13 · Conf #5060.372.552" },
+  { id: 23, status: "done", label: "Orcas Island accommodation" },
 ];
 
+// ─── STYLE CONFIG ─────────────────────────────────────────────────────────────
 const PRIVATE_PW = "6116";
 const typeStyles = {
   travel:  { bg: "#1a1f2e", accent: "#4a9eff", label: "TRAVEL" },
@@ -256,13 +273,6 @@ const typeStyles = {
   leisure: { bg: "#111820", accent: "#5b8fa8", label: "EXPLORE" },
   special: { bg: "#1a1020", accent: "#c47fd5", label: "SPECIAL" },
 };
-const legend = [
-  { color: "#4a9eff", label: "TRAVEL",  desc: "Flights & transit" },
-  { color: "#4a7c59", label: "OPEN",    desc: "Free days" },
-  { color: "#d4a843", label: "EVENT",   desc: "Work & dinners" },
-  { color: "#5b8fa8", label: "EXPLORE", desc: "Sightseeing" },
-  { color: "#c47fd5", label: "SPECIAL", desc: "Milestones" },
-];
 const tagStyle = (c) => ({ display:"inline-block", background: c||"#2d3748", color:"#fff", fontSize:"9px", fontFamily:"'DM Mono',monospace", letterSpacing:"0.12em", padding:"2px 7px", borderRadius:"3px", marginLeft:"8px", verticalAlign:"middle", fontWeight:600, textTransform:"uppercase" });
 const statusCfg = {
   done:    { color:"#2d6a4f", bg:"#0d1f17", icon:"✓", text:"#52b788" },
@@ -270,38 +280,189 @@ const statusCfg = {
   waiting: { color:"#e06b3a", bg:"#1a1008", icon:"◌", text:"#e06b3a" },
 };
 
+// ─── CALENDAR GRID HELPERS ────────────────────────────────────────────────────
+const MONTHS = [
+  { name: "June 2026",     year: 2026, month: 5,  days: 30 },
+  { name: "July 2026",     year: 2026, month: 6,  days: 31 },
+  { name: "August 2026",   year: 2026, month: 7,  days: 31 },
+  { name: "September 2026",year: 2026, month: 8,  days: 30 },
+  { name: "October 2026",  year: 2026, month: 9,  days: 31 },
+  { name: "November 2026", year: 2026, month: 10, days: 30 },
+  { name: "December 2026", year: 2026, month: 11, days: 31 },
+];
+const MONTH_ABBR = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+
+function buildDayMap() {
+  const map = {};
+  itinerary.forEach(day => {
+    const m = day.date.match(/([A-Z][a-z]+),\s+([A-Z][a-z]+)\s+(\d+)/);
+    if (!m) return;
+    const monthIdx = MONTH_ABBR[m[2]];
+    if (monthIdx === undefined) return;
+    const key = `${2026}-${String(monthIdx+1).padStart(2,"0")}-${String(parseInt(m[3])).padStart(2,"0")}`;
+    map[key] = day;
+  });
+  return map;
+}
+
+function getWeekDays(anchorDate) {
+  const d = new Date(anchorDate);
+  const dow = d.getDay();
+  const sunday = new Date(d);
+  sunday.setDate(d.getDate() - dow);
+  return Array.from({length:7}, (_, i) => {
+    const dd = new Date(sunday);
+    dd.setDate(sunday.getDate() + i);
+    return dd;
+  });
+}
+
+function fmtKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+// ─── SEARCH HELPER ────────────────────────────────────────────────────────────
+function searchAll(q) {
+  if (!q || q.length < 2) return [];
+  const lq = q.toLowerCase();
+  const results = [];
+
+  itinerary.forEach(day => {
+    const text = `${day.date} ${day.location} ${day.items.map(i=>i.label).join(" ")}`.toLowerCase();
+    if (text.includes(lq)) results.push({ type: "itinerary", icon: day.icon, title: day.location, subtitle: day.date, data: day });
+  });
+
+  flights.forEach(f => {
+    const text = `${f.direction} ${f.date} ${f.conf||""} ${f.pax} ${f.segments.map(s=>s.route+" "+s.flight).join(" ")} ${f.notes}`.toLowerCase();
+    if (text.includes(lq)) results.push({ type: "flight", icon: "✈️", title: f.direction + " — " + f.date, subtitle: f.conf ? "Conf " + f.conf : "Pending", data: f });
+  });
+
+  hotels.forEach(h => {
+    const text = `${h.name} ${h.location} ${h.conf} ${h.who} ${h.checkin} ${h.checkout} ${h.notes}`.toLowerCase();
+    if (text.includes(lq)) results.push({ type: "hotel", icon: "🏨", title: h.name, subtitle: h.checkin + " → " + h.checkout, data: h });
+  });
+
+  return results.slice(0, 12);
+}
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function App() {
-  const [expanded, setExpanded] = useState(null);
-  const [activeTab, setActiveTab] = useState("itinerary");
-  const [pwInput, setPwInput] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
-  const [pwError, setPwError] = useState(false);
-  const [calCat, setCalCat] = useState("All");
-  const [showLegend, setShowLegend] = useState(false);
-  const toggle = (i) => setExpanded(expanded === i ? null : i);
+  const today = new Date();
+  const todayKey = fmtKey(today);
+  const dayMap = buildDayMap();
+
+  // Core state
+  const [activeTab, setActiveTab]     = useState("itinerary");
+  const [pwInput, setPwInput]         = useState("");
+  const [unlocked, setUnlocked]       = useState(false);
+  const [pwError, setPwError]         = useState(false);
+  const [calCat, setCalCat]           = useState(calendarEvents[0].category);
+  const [actionItems, setActionItems] = useState(initialActions);
+
+  // Itinerary view modes
+  const [viewMode, setViewMode]       = useState("month"); // "day" | "week" | "month"
+  const [selDay, setSelDay]           = useState(todayKey);
+  const [weekAnchor, setWeekAnchor]   = useState(today);
+  const [monthIdx, setMonthIdx]       = useState(0); // index into MONTHS
+
+  // Search
+  const [searchQ, setSearchQ]         = useState("");
+  const [searchOpen, setSearchOpen]   = useState(false);
+  const searchResults                 = searchAll(searchQ);
+
+  // Add Event modal
+  const [addOpen, setAddOpen]         = useState(false);
+  const [form, setForm]               = useState({ title:"", date:"", startTime:"", endTime:"", location:"", description:"" });
+  const [generatedLink, setGeneratedLink] = useState(null);
+
+  // Mark done modal
+  const [markingId, setMarkingId]     = useState(null);
+  const [confInput, setConfInput]     = useState("");
+
   const pendingCount = actionItems.filter(a => a.status !== "done").length;
   const tryUnlock = () => { if (pwInput === PRIVATE_PW) { setUnlocked(true); setPwError(false); } else { setPwError(true); setPwInput(""); } };
+
   const tabs = [
     { key: "itinerary", label: "Itinerary" },
     { key: "flights",   label: "Flights" },
     { key: "hotels",    label: "Hotels" },
-    { key: "calendar",  label: "📅 Cal" },
+    { key: "calendar",  label: "📅 Calendar" },
     { key: "actions",   label: `Actions (${pendingCount})` },
-    { key: "private",   label: "🔒" },
+    { key: "private",   label: "🔒 Private" },
   ];
+
+  // Mark action done
+  const markDone = (id) => {
+    setActionItems(prev => prev.map(a => a.id === id
+      ? { ...a, status: "done", label: confInput ? a.label + " · Conf " + confInput : a.label }
+      : a
+    ));
+    setMarkingId(null);
+    setConfInput("");
+  };
+
+  // Generate calendar invite link
+  const generateLink = () => {
+    if (!form.title || !form.date) return;
+    setGeneratedLink(gCalWithGuests(form));
+  };
+
+  // Week navigation
+  const prevWeek = () => { const d = new Date(weekAnchor); d.setDate(d.getDate()-7); setWeekAnchor(d); };
+  const nextWeek = () => { const d = new Date(weekAnchor); d.setDate(d.getDate()+7); setWeekAnchor(d); };
+  const goToday  = () => { setSelDay(todayKey); setWeekAnchor(today); setMonthIdx(0); };
+
+  const weekDays = getWeekDays(weekAnchor);
+
+  // Input style helper
+  const inputStyle = { width:"100%", padding:"9px 12px", background:"#0e1520", border:"1px solid #1e2d40", borderRadius:6, color:"#d0dce8", fontSize:12, fontFamily:"'DM Mono',monospace", outline:"none", boxSizing:"border-box" };
 
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", color:"#e2e8f0" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap'); *{box-sizing:border-box} .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(3px)} .ir{animation:fi .15s ease} .tb{cursor:pointer;border:none;background:none;transition:all .15s} .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8} @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
+        *{box-sizing:border-box}
+        .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(2px)}
+        .ir{animation:fi .15s ease}
+        .tb{cursor:pointer;border:none;background:none;transition:all .15s}
+        .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8}
+        .gcell{cursor:pointer;transition:background .12s,border .12s;border-radius:5px}
+        .gcell:hover{filter:brightness(1.25)}
+        .btn{cursor:pointer;border:none;transition:all .15s;font-family:'DM Mono',monospace;letter-spacing:0.1em;text-transform:uppercase}
+        .btn:hover{opacity:.85}
+        .overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+        .modal{background:#0e1116;border:1px solid #1e2d40;border-radius:12px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+        .sr-result:hover{background:#141c28!important}
+        @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .fadeIn{animation:fadeIn .2s ease}
+      `}</style>
 
-      {/* Sticky nav bar */}
-      <div style={{ borderBottom:"1px solid #141820", background:"#0a0c10", position:"sticky", top:0, zIndex:100 }}>
-        <div style={{ maxWidth:860, margin:"0 auto", padding:"0 20px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56 }}>
-          <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, color:"#f0f4f8" }}>N&amp;M Travel</div>
-          <div style={{ display:"flex", gap:0 }}>
+      {/* ── STICKY NAV ─────────────────────────────────────────────────────── */}
+      <div style={{ position:"sticky", top:0, zIndex:100, background:"#0a0c10ee", backdropFilter:"blur(10px)", borderBottom:"1px solid #1a2030" }}>
+        <div style={{ maxWidth:700, margin:"0 auto", padding:"10px 16px 0" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+              <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:"#f0f4f8" }}>N&M Travel</span>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", letterSpacing:"0.15em" }}>2026</span>
+            </div>
+            <div style={{ display:"flex", gap:6 }}>
+              {/* Search button */}
+              <button className="btn" onClick={() => setSearchOpen(true)}
+                style={{ padding:"5px 12px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:6, background:"none" }}>
+                🔍 Search
+              </button>
+              {/* Add Event button */}
+              <button className="btn" onClick={() => { setAddOpen(true); setGeneratedLink(null); setForm({ title:"", date:"", startTime:"", endTime:"", location:"", description:"" }); }}
+                style={{ padding:"5px 12px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff44", borderRadius:6, background:"#4a9eff11" }}>
+                + Add Event
+              </button>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:1, flexWrap:"wrap" }}>
             {tabs.map(t => (
               <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
-                style={{ padding:"8px 14px", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#f0f4f8":"#3a4a5a", borderBottom: activeTab===t.key?"2px solid #4a9eff":"2px solid transparent", paddingBottom: activeTab===t.key?"6px":"8px" }}>
+                style={{ padding:"7px 12px", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#4a9eff":"#4a5568", borderBottom: activeTab===t.key?"2px solid #4a9eff":"2px solid transparent", marginBottom:-1 }}>
                 {t.label}
               </button>
             ))}
@@ -309,66 +470,206 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{ maxWidth:700, margin:"0 auto", padding:"28px 16px" }}>
+      <div style={{ maxWidth:700, margin:"0 auto", padding:"24px 16px" }}>
 
+        {/* ── ITINERARY TAB ──────────────────────────────────────────────────── */}
         {activeTab === "itinerary" && (
           <div>
-            {/* Legend toggle */}
-            <div style={{ marginBottom:14 }}>
-              <button onClick={() => setShowLegend(!showLegend)} style={{ background:"none", border:"1px solid #1a2030", borderRadius:6, color:"#4a5568", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", padding:"4px 10px", cursor:"pointer" }}>
-                {showLegend ? "HIDE LEGEND ▲" : "COLOR GUIDE ▾"}
+            {/* View mode toolbar */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18, flexWrap:"wrap", gap:8 }}>
+              <div style={{ display:"flex", gap:2, background:"#0e1116", border:"1px solid #1a2030", borderRadius:7, padding:2 }}>
+                {["day","week","month"].map(m => (
+                  <button key={m} className="btn" onClick={() => setViewMode(m)}
+                    style={{ padding:"5px 14px", fontSize:9, borderRadius:5, background: viewMode===m?"#4a9eff22":"none", color: viewMode===m?"#4a9eff":"#4a5568", border: viewMode===m?"1px solid #4a9eff33":"1px solid transparent" }}>
+                    {m.charAt(0).toUpperCase()+m.slice(1)}
+                  </button>
+                ))}
+              </div>
+              <button className="btn" onClick={goToday}
+                style={{ padding:"5px 14px", fontSize:9, color:"#52b788", border:"1px solid #52b78844", borderRadius:6, background:"#52b78811" }}>
+                Today
               </button>
-              {showLegend && (
-                <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginTop:10 }}>
-                  {legend.map(l => (
-                    <div key={l.label} style={{ display:"flex", alignItems:"center", gap:6, background:"#0e1116", border:`1px solid ${l.color}33`, borderLeft:`3px solid ${l.color}`, borderRadius:5, padding:"5px 10px" }}>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:l.color, letterSpacing:"0.1em" }}>{l.label}</span>
-                      <span style={{ fontSize:10, color:"#5a6a7a" }}>{l.desc}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-            {/* Timeline */}
-            <div style={{ position:"relative" }}>
-              <div style={{ position:"absolute", left:22, top:0, bottom:0, width:1, background:"linear-gradient(to bottom,#1e3a5f,#2d1a4a,#0a0c10)", pointerEvents:"none" }} />
-              {itinerary.map((day, i) => {
-                const s = typeStyles[day.type]||typeStyles.free;
-                const open = expanded===i;
-                const today = isToday(day.date);
-                return (
-                  <div key={i} className="dc" onClick={() => toggle(i)} style={{ display:"flex", gap:14, marginBottom:5, position:"relative", zIndex:1 }}>
-                    <div style={{ width:44, height:44, minWidth:44, borderRadius:"50%", background: today?"#1a2f1a":s.bg, border:`1.5px solid ${today?"#52b788":open?s.accent:"#1e2535"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, boxShadow: today?"0 0 14px #52b78866":open?`0 0 12px ${s.accent}44`:"none" }}>{day.icon}</div>
-                    <div style={{ flex:1, background: today?"#0d1a0d":open?s.bg:"#0e1116", border:`1px solid ${today?"#52b78855":open?s.accent+"55":"#1a2030"}`, borderRadius:8, padding:"9px 13px" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:3, alignItems:"flex-start" }}>
-                        <div>
-                          <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:today?"#52b788":s.accent, letterSpacing:"0.15em", textTransform:"uppercase" }}>{day.date}</span>
-                            {today && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#52b788", background:"#0d2a0d", border:"1px solid #52b78844", padding:"1px 6px", borderRadius:3 }}>TODAY</span>}
-                          </div>
-                          <div style={{ fontWeight:500, fontSize:13, marginTop:2, color:"#d0dce8", lineHeight:1.3 }}>{day.location}</div>
-                        </div>
-                        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:today?"#52b788":s.accent, border:`1px solid ${today?"#52b78844":s.accent+"44"}`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
+
+            {/* ── DAY VIEW ── */}
+            {viewMode === "day" && (() => {
+              const dayEntry = dayMap[selDay];
+              const ds = dayEntry ? (typeStyles[dayEntry.type]||typeStyles.free) : null;
+              const d = new Date(selDay + "T12:00:00");
+              const prevDay = () => { const pd = new Date(d); pd.setDate(d.getDate()-1); setSelDay(fmtKey(pd)); };
+              const nextDay = () => { const nd = new Date(d); nd.setDate(d.getDate()+1); setSelDay(fmtKey(nd)); };
+              return (
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                    <button className="btn" onClick={prevDay} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
+                    <div style={{ textAlign:"center" }}>
+                      <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#f0f4f8" }}>
+                        {d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
                       </div>
-                      {open && (
-                        <div style={{ marginTop:9, borderTop:`1px solid ${today?"#52b78822":s.accent+"22"}`, paddingTop:9 }}>
-                          {day.items.map((item, j) => (
-                            <div key={j} className="ir" style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
-                              <span style={{ color:today?"#52b788":s.accent, marginRight:5, fontSize:9 }}>▸</span>
-                              {item.label}
-                              {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {selDay===todayKey && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", letterSpacing:"0.1em" }}>TODAY</span>}
                     </div>
+                    <button className="btn" onClick={nextDay} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>›</button>
                   </div>
-                );
-              })}
-            </div>
+                  {dayEntry ? (
+                    <div style={{ background:ds.bg, border:`1px solid ${ds.accent}44`, borderLeft:`3px solid ${ds.accent}`, borderRadius:10, padding:"18px" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                        <div>
+                          <div style={{ fontSize:22 }}>{dayEntry.icon}</div>
+                          <div style={{ fontSize:15, fontWeight:600, color:"#d0dce8", marginTop:6 }}>{dayEntry.location}</div>
+                        </div>
+                        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:ds.accent, border:`1px solid ${ds.accent}44`, padding:"3px 8px", borderRadius:3 }}>{ds.label}</span>
+                      </div>
+                      {dayEntry.items.map((item, j) => (
+                        <div key={j} style={{ fontSize:13, color:"#94a3b8", marginBottom:8, lineHeight:1.6, borderBottom:"1px solid #ffffff08", paddingBottom:8 }}>
+                          <span style={{ color:ds.accent, marginRight:6, fontSize:10 }}>▸</span>
+                          {item.label}
+                          {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign:"center", padding:"48px 16px", color:"#2d3a4a", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+                      <div style={{ fontSize:32, marginBottom:12 }}>—</div>
+                      No plans for this day
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── WEEK VIEW ── */}
+            {viewMode === "week" && (() => {
+              return (
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                    <button className="btn" onClick={prevWeek} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#4a9eff", letterSpacing:"0.15em" }}>
+                      {weekDays[0].toLocaleDateString("en-US",{month:"short",day:"numeric"})} – {weekDays[6].toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
+                    </div>
+                    <button className="btn" onClick={nextWeek} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>›</button>
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:4 }}>
+                    {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#2d3a4a", padding:"2px 0" }}>{d}</div>
+                    ))}
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:16 }}>
+                    {weekDays.map(d => {
+                      const k = fmtKey(d);
+                      const entry = dayMap[k];
+                      const s = entry ? (typeStyles[entry.type]||typeStyles.free) : null;
+                      const isToday = k===todayKey;
+                      const isSel = k===selDay;
+                      return (
+                        <div key={k} className="gcell" onClick={() => setSelDay(k)}
+                          style={{ minHeight:54, padding:"6px 4px", textAlign:"center", background: isSel?(s?.accent+"33"||"#4a9eff22"):entry?s?.bg:"transparent", border: isSel?`1px solid ${s?.accent||"#4a9eff"}`:`1px solid ${isToday?"#4a9eff55":entry?s?.accent+"22":"#1a2030"}` }}>
+                          <div style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color: isToday?"#4a9eff":entry?s?.accent:"#2d3a4a", fontWeight: isToday?700:400 }}>{d.getDate()}</div>
+                          {entry && <div style={{ fontSize:14, marginTop:2 }}>{entry.icon}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Selected day detail */}
+                  {selDay && dayMap[selDay] && (() => {
+                    const entry = dayMap[selDay];
+                    const s = typeStyles[entry.type]||typeStyles.free;
+                    return (
+                      <div className="ir" style={{ background:s.bg, border:`1px solid ${s.accent}44`, borderLeft:`3px solid ${s.accent}`, borderRadius:8, padding:"14px 16px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10 }}>
+                          <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8" }}>{entry.icon} {entry.location}</div>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
+                        </div>
+                        {entry.items.map((item, j) => (
+                          <div key={j} style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
+                            <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
+                            {item.label}
+                            {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                  {selDay && !dayMap[selDay] && (
+                    <div style={{ textAlign:"center", padding:"24px", color:"#2d3a4a", fontFamily:"'DM Mono',monospace", fontSize:10 }}>No plans for this day</div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── MONTH VIEW ── */}
+            {viewMode === "month" && (() => {
+              const { name, year, month, days } = MONTHS[monthIdx];
+              const firstDow = new Date(year, month, 1).getDay();
+              const cells = [];
+              for (let i=0; i<firstDow; i++) cells.push(null);
+              for (let d=1; d<=days; d++) cells.push(d);
+              const keyStr = (d) => `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+              const hasTrips = Array.from({length:days},(_,i)=>i+1).some(d=>dayMap[keyStr(d)]);
+
+              return (
+                <div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+                    <button className="btn" onClick={() => setMonthIdx(Math.max(0,monthIdx-1))} style={{ fontSize:16, color: monthIdx>0?"#4a5568":"#1e2535", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#4a9eff", letterSpacing:"0.18em" }}>{name.toUpperCase()}</div>
+                    <button className="btn" onClick={() => setMonthIdx(Math.min(MONTHS.length-1,monthIdx+1))} style={{ fontSize:16, color: monthIdx<MONTHS.length-1?"#4a5568":"#1e2535", border:"none", background:"none", padding:"4px 8px" }}>›</button>
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:2 }}>
+                    {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#2d3a4a", padding:"2px 0" }}>{d}</div>
+                    ))}
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
+                    {cells.map((d, ci) => {
+                      if (!d) return <div key={`e${ci}`} />;
+                      const k = keyStr(d);
+                      const item = dayMap[k];
+                      const s = item ? (typeStyles[item.type]||typeStyles.free) : null;
+                      const isToday = k===todayKey;
+                      const isSel = k===selDay;
+                      return (
+                        <div key={k} className="gcell"
+                          onClick={() => { setSelDay(isSel ? null : k); }}
+                          style={{ height:36, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", position:"relative",
+                            background: isSel?(s?.accent+"44"||"#4a9eff22"):item?s?.bg:"transparent",
+                            border: isSel?`1px solid ${s?.accent||"#4a9eff"}`:`1px solid ${isToday?"#4a9eff66":item?s?.accent+"22":"transparent"}`,
+                            cursor: "pointer" }}>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color: isToday?"#4a9eff":item?s?.accent:"#2d3a4a", fontWeight:isToday?700:400, lineHeight:1 }}>{d}</span>
+                          {item && <div style={{ fontSize:9, lineHeight:1 }}>{item.icon}</div>}
+                          {isToday && <div style={{ position:"absolute", top:1, right:2, fontFamily:"'DM Mono',monospace", fontSize:5, color:"#4a9eff" }}>●</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {!hasTrips && <div style={{ textAlign:"center", padding:"12px 0", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#1e2a38" }}>— no trips added yet —</div>}
+                  {/* Day detail panel */}
+                  {selDay && dayMap[selDay] && (() => {
+                    const [sy,sm,sd] = selDay.split("-").map(Number);
+                    if (sm-1 !== month || sy !== year) return null;
+                    const entry = dayMap[selDay];
+                    const s = typeStyles[entry.type]||typeStyles.free;
+                    return (
+                      <div className="ir" style={{ marginTop:10, background:s.bg, border:`1px solid ${s.accent}44`, borderLeft:`3px solid ${s.accent}`, borderRadius:8, padding:"12px 14px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                          <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8" }}>{entry.icon} {entry.location}</div>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
+                        </div>
+                        {entry.items.map((item, j) => (
+                          <div key={j} style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
+                            <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
+                            {item.label}
+                            {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            })()}
           </div>
         )}
 
+        {/* ── FLIGHTS TAB ──────────────────────────────────────────────────────── */}
         {activeTab === "flights" && flights.map((f, i) => {
           const ip = f.status==="pending"; const acc = ip?"#e8a735":"#4a9eff";
           const pc = f.pax==="NICK & MIRIAM"?"#c47fd5": f.pax==="FULL TEAM"?"#d4a843":"#5b8fa8";
@@ -387,18 +688,13 @@ export default function App() {
                   : <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#e8a735", background:"#1a1508", border:"1px solid #e8a73544", padding:"3px 8px", borderRadius:3 }}>BOOK</span>
                 }
               </div>
-              {/* Mobile-friendly two-line segment layout */}
               {f.segments.map((seg, j) => (
-                <div key={j} style={{ background:"#ffffff08", borderRadius:6, padding:"8px 10px", marginBottom:6 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}>
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:acc, minWidth:60 }}>{seg.flight}</span>
-                    <span style={{ fontSize:14, fontWeight:600, color:"#e0e8f0" }}>{seg.route}</span>
-                  </div>
-                  <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center" }}>
-                    <span style={{ fontSize:12, color:"#7090a8" }}>{seg.depart} → {seg.arrive}</span>
-                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#0e1820", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
-                    {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5a6a7a" }}>Seat {seg.seat}</span>}
-                  </div>
+                <div key={j} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:7, flexWrap:"wrap" }}>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:acc, minWidth:50 }}>{seg.flight}</span>
+                  <span style={{ fontSize:14, fontWeight:600, color:"#e0e8f0" }}>{seg.route}</span>
+                  <span style={{ fontSize:11, color:"#7090a8" }}>{seg.depart} → {seg.arrive}</span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#0e1820", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
+                  {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#7090a8" }}>Seat {seg.seat}</span>}
                 </div>
               ))}
               <div style={{ fontSize:11, color:"#5a6a7a", marginTop:6, paddingTop:6, borderTop:`1px solid ${acc}18`, fontStyle:"italic" }}>{f.notes}</div>
@@ -406,6 +702,7 @@ export default function App() {
           );
         })}
 
+        {/* ── HOTELS TAB ───────────────────────────────────────────────────────── */}
         {activeTab === "hotels" && hotels.map((h, i) => {
           const ip = h.status==="pending"; const acc = ip?"#e8a735":"#52b788";
           return (
@@ -433,41 +730,41 @@ export default function App() {
           );
         })}
 
+        {/* ── CALENDAR TAB ─────────────────────────────────────────────────────── */}
         {activeTab === "calendar" && (
           <div>
-            <div style={{ fontSize:12, color:"#5a6a7a", marginBottom:14, lineHeight:1.6 }}>
-              Tap any event to add to the N&M Travel calendar.
-            </div>
-            {/* Category filters */}
-            <div style={{ display:"flex", gap:5, marginBottom:16, flexWrap:"wrap" }}>
+            <div style={{ fontSize:13, color:"#5a6a7a", marginBottom:18, lineHeight:1.6 }}>Click any event to open Google Calendar pre-filled. Choose a category:</div>
+            <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {calendarEvents.map(cat => (
                 <button key={cat.category} onClick={() => setCalCat(cat.category)}
-                  style={{ padding:"5px 12px", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer",
+                  style={{ padding:"6px 14px", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer",
                     background: calCat===cat.category?"#4a9eff22":"#0e1116",
                     color: calCat===cat.category?"#4a9eff":"#4a5568",
                     border:`1px solid ${calCat===cat.category?"#4a9eff":"#1a2030"}`, borderRadius:6 }}>
-                  {cat.category} {cat.category==="All"?"":""}
+                  {cat.category}
                 </button>
               ))}
             </div>
             {calendarEvents.find(c => c.category===calCat)?.events.map((ev, i) => (
               <a key={i} href={gCal(ev)} target="_blank" rel="noopener noreferrer" className="cb"
-                style={{ display:"block", background:"#0e1116", border:"1px solid #1a2030", borderLeft:"3px solid #4a9eff", borderRadius:8, padding:"11px 14px", marginBottom:7 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:8 }}>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8", marginBottom:3 }}>{ev.title}</div>
-                    <div style={{ fontSize:10, color:"#5b8fa8", fontFamily:"'DM Mono',monospace" }}>
-                      {ev.allDay!==false ? `${ev.start}` : "Timed"}
+                style={{ display:"block", background:"#0e1116", border:"1px solid #1a2030", borderLeft:"3px solid #4a9eff", borderRadius:8, padding:"12px 16px", marginBottom:8 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10, flexWrap:"wrap" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8", marginBottom:4 }}>{ev.title}</div>
+                    <div style={{ fontSize:11, color:"#5b8fa8", fontFamily:"'DM Mono',monospace", marginBottom: ev.location?3:0 }}>
+                      {ev.allDay!==false ? `${ev.start} → ${ev.end} · All day` : "Timed event"}
                     </div>
-                    {ev.location && <div style={{ fontSize:10, color:"#4a5a6a", marginTop:2 }}>📍 {ev.location}</div>}
+                    {ev.location && <div style={{ fontSize:11, color:"#4a5a6a" }}>📍 {ev.location}</div>}
+                    {ev.description && <div style={{ fontSize:11, color:"#4a5a6a", marginTop:3, fontStyle:"italic" }}>{ev.description}</div>}
                   </div>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#4a9eff", background:"#0e1f30", border:"1px solid #4a9eff44", padding:"4px 8px", borderRadius:5, whiteSpace:"nowrap", flexShrink:0 }}>+ ADD</span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", background:"#0e1f30", border:"1px solid #4a9eff44", padding:"4px 10px", borderRadius:5, whiteSpace:"nowrap" }}>+ Add to Cal</span>
                 </div>
               </a>
             ))}
           </div>
         )}
 
+        {/* ── ACTIONS TAB ──────────────────────────────────────────────────────── */}
         {activeTab === "actions" && (
           <div>
             {["pending","waiting","done"].map(status => {
@@ -480,10 +777,18 @@ export default function App() {
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.15em", color:cfg.text, textTransform:"uppercase", marginBottom:7, display:"flex", alignItems:"center", gap:7 }}>
                     <span>{cfg.icon}</span> {labels[status]} <span style={{ color:"#2d3748" }}>({items.length})</span>
                   </div>
-                  {items.map((item, i) => (
-                    <div key={i} style={{ background:cfg.bg, border:`1px solid ${cfg.color}33`, borderLeft:`3px solid ${cfg.color}`, borderRadius:6, padding:"9px 13px", marginBottom:5, fontSize:12, color: status==="done"?"#52876e":"#c0c8d8", display:"flex", alignItems:"flex-start", gap:9 }}>
-                      <span style={{ color:cfg.text, fontSize:12, minWidth:14, marginTop:1 }}>{cfg.icon}</span>
-                      {item.label}
+                  {items.map((item) => (
+                    <div key={item.id} style={{ background:cfg.bg, border:`1px solid ${cfg.color}33`, borderLeft:`3px solid ${cfg.color}`, borderRadius:6, padding:"9px 13px", marginBottom:5, fontSize:12, color: status==="done"?"#52876e":"#c0c8d8", display:"flex", alignItems:"flex-start", gap:9, justifyContent:"space-between" }}>
+                      <div style={{ display:"flex", alignItems:"flex-start", gap:9, flex:1 }}>
+                        <span style={{ color:cfg.text, fontSize:12, minWidth:14, marginTop:1 }}>{cfg.icon}</span>
+                        {item.label}
+                      </div>
+                      {status !== "done" && (
+                        <button className="btn" onClick={() => { setMarkingId(item.id); setConfInput(""); }}
+                          style={{ fontSize:8, color:"#52b788", border:"1px solid #52b78844", borderRadius:4, padding:"2px 8px", background:"#0d1f17", flexShrink:0, marginLeft:8 }}>
+                          Mark Done
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -492,6 +797,7 @@ export default function App() {
           </div>
         )}
 
+        {/* ── PRIVATE TAB ──────────────────────────────────────────────────────── */}
         {activeTab === "private" && (
           <div>
             {!unlocked ? (
@@ -500,7 +806,7 @@ export default function App() {
                 <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#c47fd5", marginBottom:6 }}>Private</div>
                 <div style={{ fontSize:13, color:"#5a6070", marginBottom:28, fontStyle:"italic" }}>Password protected.</div>
                 <input type="password" value={pwInput} onChange={e => { setPwInput(e.target.value); setPwError(false); }} onKeyDown={e => e.key==="Enter" && tryUnlock()} placeholder="Enter password"
-                  style={{ width:"100%", padding:"12px 16px", background:"#0e1116", border:`1px solid ${pwError?"#e05252":"#2a3040"}`, borderRadius:8, color:"#e2e8f0", fontSize:16, fontFamily:"'DM Mono',monospace", letterSpacing:"0.3em", textAlign:"center", outline:"none", boxSizing:"border-box", marginBottom:8 }} />
+                  style={{ width:"100%", padding:"12px 16px", background:"#0e1116", border:`1px solid ${pwError?"#e05252":"#2a3040"}`, borderRadius:8, color:"#e2e8f0", fontSize:16, fontFamily:"'DM Mono',monospace", letterSpacing:"0.3em", textAlign:"center", outline:"none", marginBottom:8 }} />
                 {pwError && <div style={{ fontSize:11, color:"#e05252", marginBottom:10 }}>Incorrect password</div>}
                 <button onClick={tryUnlock} style={{ width:"100%", padding:"12px", background:"#1a1020", border:"1px solid #c47fd555", borderRadius:8, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:"0.15em", textTransform:"uppercase", cursor:"pointer" }}>Unlock</button>
               </div>
@@ -511,8 +817,7 @@ export default function App() {
                     <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#c47fd5" }}>Private Plans</div>
                     <div style={{ fontSize:11, color:"#5a4a6a", fontStyle:"italic", marginTop:2 }}>Eyes only</div>
                   </div>
-                  {/* More prominent lock button */}
-                  <button onClick={() => { setUnlocked(false); setPwInput(""); }} style={{ background:"#1a1020", border:"1px solid #c47fd5", borderRadius:8, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.12em", padding:"8px 16px", cursor:"pointer" }}>🔒 LOCK</button>
+                  <button onClick={() => { setUnlocked(false); setPwInput(""); }} style={{ background:"none", border:"1px solid #c47fd544", borderRadius:6, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.12em", padding:"5px 12px", cursor:"pointer" }}>🔒 LOCK</button>
                 </div>
                 <div style={{ background:"#120a1a", border:"1px solid #c47fd544", borderLeft:"3px solid #c47fd5", borderRadius:10, padding:"18px", marginBottom:14 }}>
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.2em", color:"#c47fd5", textTransform:"uppercase", marginBottom:12 }}>🎂 Miriam's Birthday — Thu Jul 9</div>
@@ -550,9 +855,117 @@ export default function App() {
             )}
           </div>
         )}
-
       </div>
-      <div style={{ textAlign:"center", padding:"28px 16px", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&amp;M TRAVEL · 2026</div>
+
+      {/* ── SEARCH MODAL ─────────────────────────────────────────────────────── */}
+      {searchOpen && (
+        <div className="overlay fadeIn" onClick={() => setSearchOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth:560 }}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#4a9eff", letterSpacing:"0.15em", marginBottom:12 }}>SEARCH</div>
+            <input autoFocus value={searchQ} onChange={e => setSearchQ(e.target.value)}
+              placeholder="Search flights, hotels, dates, conf numbers..."
+              style={{ ...inputStyle, fontSize:14, marginBottom:12 }} />
+            {searchQ.length >= 2 && (
+              <div>
+                {searchResults.length === 0
+                  ? <div style={{ fontSize:12, color:"#3a4a5a", padding:"12px 0", fontStyle:"italic" }}>No results found</div>
+                  : searchResults.map((r, i) => (
+                    <div key={i} className="sr-result" style={{ display:"flex", gap:10, alignItems:"flex-start", padding:"10px 10px", background:"#0a1018", border:"1px solid #1a2030", borderRadius:6, marginBottom:6, cursor:"default" }}>
+                      <span style={{ fontSize:18, minWidth:24 }}>{r.icon}</span>
+                      <div>
+                        <div style={{ fontSize:12, fontWeight:500, color:"#d0dce8" }}>{r.title}</div>
+                        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a6a7a", marginTop:2 }}>{r.type.toUpperCase()} · {r.subtitle}</div>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            )}
+            {searchQ.length < 2 && (
+              <div style={{ fontSize:11, color:"#2a3a4a", fontStyle:"italic" }}>Type at least 2 characters to search across all itinerary, flights, and hotels</div>
+            )}
+            <button className="btn" onClick={() => { setSearchOpen(false); setSearchQ(""); }} style={{ marginTop:16, fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:5, padding:"6px 14px", background:"none" }}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD EVENT MODAL ───────────────────────────────────────────────────── */}
+      {addOpen && (
+        <div className="overlay fadeIn" onClick={() => setAddOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#4a9eff", letterSpacing:"0.15em", marginBottom:4 }}>ADD EVENT</div>
+            <div style={{ fontSize:11, color:"#3a5a6a", marginBottom:18, fontStyle:"italic" }}>Generates a Google Calendar link pre-loaded for Nick & Miriam</div>
+
+            {[
+              { label:"Event Name *", key:"title", type:"text", placeholder:"Dinner at Matsuhisa" },
+              { label:"Date *", key:"date", type:"date", placeholder:"" },
+              { label:"Start Time", key:"startTime", type:"time", placeholder:"" },
+              { label:"End Time", key:"endTime", type:"time", placeholder:"" },
+              { label:"Location", key:"location", type:"text", placeholder:"Porto Cervo, Sardinia" },
+            ].map(f => (
+              <div key={f.key} style={{ marginBottom:12 }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#4a6a5a", letterSpacing:"0.12em", marginBottom:5 }}>{f.label}</div>
+                <input type={f.type} value={form[f.key]} onChange={e => setForm(p => ({...p, [f.key]:e.target.value}))} placeholder={f.placeholder}
+                  style={inputStyle} />
+              </div>
+            ))}
+            <div style={{ marginBottom:18 }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#4a6a5a", letterSpacing:"0.12em", marginBottom:5 }}>Notes / Description</div>
+              <textarea value={form.description} onChange={e => setForm(p => ({...p, description:e.target.value}))} rows={3}
+                placeholder="Reservation details, dress code, conf number..."
+                style={{ ...inputStyle, resize:"vertical", lineHeight:1.5 }} />
+            </div>
+
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+              <button className="btn" onClick={generateLink} disabled={!form.title||!form.date}
+                style={{ flex:1, padding:"10px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff55", borderRadius:7, background:"#4a9eff11", opacity: (!form.title||!form.date)?0.4:1 }}>
+                Generate Calendar Link
+              </button>
+              <button className="btn" onClick={() => setAddOpen(false)} style={{ padding:"10px 14px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:7, background:"none" }}>Cancel</button>
+            </div>
+
+            {generatedLink && (
+              <div className="ir" style={{ marginTop:16, background:"#0d1f17", border:"1px solid #2d6a4f44", borderRadius:8, padding:"14px" }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", marginBottom:8 }}>✓ CALENDAR LINK READY</div>
+                <div style={{ fontSize:11, color:"#5a8a6a", marginBottom:12, lineHeight:1.5 }}>
+                  Opens Google Calendar with <strong style={{color:"#7ab890"}}>Nick & Miriam</strong> pre-added as guests. Each person will receive a calendar invite.
+                </div>
+                <a href={generatedLink} target="_blank" rel="noopener noreferrer"
+                  style={{ display:"block", textAlign:"center", padding:"10px", background:"#1a3a28", border:"1px solid #52b78855", borderRadius:6, color:"#52b788", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textDecoration:"none" }}>
+                  → Open in Google Calendar
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── MARK DONE MODAL ──────────────────────────────────────────────────── */}
+      {markingId && (() => {
+        const item = actionItems.find(a => a.id === markingId);
+        return (
+          <div className="overlay fadeIn" onClick={() => setMarkingId(null)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth:400 }}>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#52b788", letterSpacing:"0.15em", marginBottom:10 }}>MARK AS DONE</div>
+              <div style={{ fontSize:12, color:"#7090a8", marginBottom:16, lineHeight:1.5, borderBottom:"1px solid #1a2030", paddingBottom:16 }}>{item?.label}</div>
+              <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#4a6a5a", letterSpacing:"0.12em", marginBottom:6 }}>Confirmation Number (optional)</div>
+              <input autoFocus value={confInput} onChange={e => setConfInput(e.target.value)}
+                onKeyDown={e => e.key==="Enter" && markDone(markingId)}
+                placeholder="e.g. G4DQXX or #42609271"
+                style={{ ...inputStyle, marginBottom:14 }} />
+              <div style={{ display:"flex", gap:8 }}>
+                <button className="btn" onClick={() => markDone(markingId)}
+                  style={{ flex:1, padding:"10px", fontSize:9, color:"#52b788", border:"1px solid #52b78855", borderRadius:7, background:"#0d1f17" }}>
+                  ✓ Mark Done
+                </button>
+                <button className="btn" onClick={() => setMarkingId(null)} style={{ padding:"10px 14px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:7, background:"none" }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      <div style={{ maxWidth:700, margin:"28px auto 0", padding:"0 16px 28px", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&M TRAVEL · 2026 · KISLINGER IMPACT COLLECTIVE</div>
     </div>
   );
 }
