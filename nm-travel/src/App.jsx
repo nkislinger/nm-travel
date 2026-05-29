@@ -268,7 +268,7 @@ export default function App() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap'); *{box-sizing:border-box} .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(3px)} .ir{animation:fi .15s ease} .tb{cursor:pointer;border:none;background:none;transition:all .15s} .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8} @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
       <div style={{ maxWidth:700, margin:"0 auto 24px" }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:8 }}>JUNE – JULY 2026</div>
+        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:8 }}>N&amp;M TRAVEL</div>
         <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,44px)", fontWeight:400, margin:"0 0 4px", color:"#f0f4f8" }}>Travel Tracker</h1>
         <div style={{ fontFamily:"'DM Serif Display',serif", fontStyle:"italic", color:"#7090a8", fontSize:15, marginBottom:18 }}>Nick & Miriam · Europe + PNW + Aspen</div>
         <div style={{ display:"flex", gap:2, borderBottom:"1px solid #1a2030", flexWrap:"wrap" }}>
