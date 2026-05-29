@@ -291,24 +291,25 @@ export default function App() {
   ];
 
   return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", padding:"28px 16px", color:"#e2e8f0" }}>
+    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", color:"#e2e8f0" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap'); *{box-sizing:border-box} .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(3px)} .ir{animation:fi .15s ease} .tb{cursor:pointer;border:none;background:none;transition:all .15s} .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8} @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
-      <div style={{ maxWidth:700, margin:"0 auto 20px" }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:8 }}>N&amp;M TRAVEL</div>
-        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,44px)", fontWeight:400, margin:"0 0 4px", color:"#f0f4f8" }}>Travel 2026</h1>
-        <div style={{ fontFamily:"'DM Serif Display',serif", fontStyle:"italic", color:"#7090a8", fontSize:15, marginBottom:16 }}>Nick & Miriam</div>
-        <div style={{ display:"flex", gap:2, borderBottom:"1px solid #1a2030", flexWrap:"wrap", alignItems:"flex-end" }}>
-          {tabs.map(t => (
-            <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
-              style={{ padding:"8px 12px", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#4a9eff":"#4a5568", borderBottom: activeTab===t.key?"2px solid #4a9eff":"2px solid transparent", marginBottom:-1 }}>
-              {t.label}
-            </button>
-          ))}
+      {/* Sticky nav bar */}
+      <div style={{ borderBottom:"1px solid #141820", background:"#0a0c10", position:"sticky", top:0, zIndex:100 }}>
+        <div style={{ maxWidth:860, margin:"0 auto", padding:"0 20px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56 }}>
+          <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, color:"#f0f4f8" }}>N&amp;M Travel</div>
+          <div style={{ display:"flex", gap:0 }}>
+            {tabs.map(t => (
+              <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
+                style={{ padding:"8px 14px", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#f0f4f8":"#3a4a5a", borderBottom: activeTab===t.key?"2px solid #4a9eff":"2px solid transparent", paddingBottom: activeTab===t.key?"6px":"8px" }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth:700, margin:"0 auto" }}>
+      <div style={{ maxWidth:700, margin:"0 auto", padding:"28px 16px" }}>
 
         {activeTab === "itinerary" && (
           <div>
@@ -551,7 +552,7 @@ export default function App() {
         )}
 
       </div>
-      <div style={{ maxWidth:700, margin:"28px auto 0", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&amp;M TRAVEL · 2026</div>
+      <div style={{ textAlign:"center", padding:"28px 16px", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&amp;M TRAVEL · 2026</div>
     </div>
   );
 }
