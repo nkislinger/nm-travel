@@ -269,8 +269,8 @@ export default function App() {
 
       <div style={{ maxWidth:700, margin:"0 auto 24px" }}>
         <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:8 }}>N&amp;M TRAVEL</div>
-        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,44px)", fontWeight:400, margin:"0 0 4px", color:"#f0f4f8" }}>Travel Tracker</h1>
-        <div style={{ fontFamily:"'DM Serif Display',serif", fontStyle:"italic", color:"#7090a8", fontSize:15, marginBottom:18 }}>Nick & Miriam · Europe + PNW + Aspen</div>
+        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,44px)", fontWeight:400, margin:"0 0 4px", color:"#f0f4f8" }}>Travel 2026</h1>
+        <div style={{ fontFamily:"'DM Serif Display',serif", fontStyle:"italic", color:"#7090a8", fontSize:15, marginBottom:18 }}>Nick & Miriam</div>
         <div style={{ display:"flex", gap:2, borderBottom:"1px solid #1a2030", flexWrap:"wrap" }}>
           {tabs.map(t => (
             <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
