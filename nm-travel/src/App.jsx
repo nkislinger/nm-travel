@@ -415,10 +415,10 @@ export default function App() {
   const weekDays = getWeekDays(weekAnchor);
 
   // Input style helper
-  const inputStyle = { width:"100%", padding:"9px 12px", background:"#0e1520", border:"1px solid #1e2d40", borderRadius:6, color:"#d0dce8", fontSize:12, fontFamily:"'DM Mono',monospace", outline:"none", boxSizing:"border-box" };
+  const inputStyle = { width:"100%", padding:"9px 12px", background:"#f4f7fc", border:"1px solid #d0dce8", borderRadius:6, color:"#1e2d3d", fontSize:12, fontFamily:"'DM Mono',monospace", outline:"none", boxSizing:"border-box" };
 
   return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", color:"#e2e8f0" }}>
+    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#f8f9fb", minHeight:"100vh", color:"#1a2230" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box}
@@ -431,30 +431,30 @@ export default function App() {
         .btn{cursor:pointer;border:none;transition:all .15s;font-family:'DM Mono',monospace;letter-spacing:0.1em;text-transform:uppercase}
         .btn:hover{opacity:.85}
         .overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
-        .modal{background:#0e1116;border:1px solid #1e2d40;border-radius:12px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
-        .sr-result:hover{background:#141c28!important}
+        .modal{background:#ffffff;border:1px solid #dde4ed;border-radius:12px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+        .sr-result:hover{background:#f0f5ff!important}
         @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
         .fadeIn{animation:fadeIn .2s ease}
       `}</style>
 
       {/* ── STICKY NAV ─────────────────────────────────────────────────────── */}
-      <div style={{ position:"sticky", top:0, zIndex:100, background:"#0a0c10ee", backdropFilter:"blur(10px)", borderBottom:"1px solid #1a2030" }}>
+      <div style={{ position:"sticky", top:0, zIndex:100, background:"#f8f9fbee", backdropFilter:"blur(10px)", borderBottom:"1px solid #dde4ed" }}>
         <div style={{ maxWidth:700, margin:"0 auto", padding:"10px 16px 0" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
             <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:"#f0f4f8" }}>N&M Travel</span>
+              <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:18, color:"#0f1824" }}>N&M Travel</span>
               <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", letterSpacing:"0.15em" }}>2026</span>
             </div>
             <div style={{ display:"flex", gap:6 }}>
               {/* Search button */}
               <button className="btn" onClick={() => setSearchOpen(true)}
-                style={{ padding:"5px 12px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:6, background:"none" }}>
+                style={{ padding:"5px 12px", fontSize:9, color:"#5a6a7a", border:"1px solid #dde4ed", borderRadius:6, background:"none" }}>
                 🔍 Search
               </button>
               {/* Add Event button */}
               <button className="btn" onClick={() => { setAddOpen(true); setGeneratedLink(null); setForm({ title:"", date:"", startTime:"", endTime:"", location:"", description:"" }); }}
-                style={{ padding:"5px 12px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff44", borderRadius:6, background:"#4a9eff11" }}>
+                style={{ padding:"5px 12px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff44", borderRadius:6, background:"#eef6ff" }}>
                 + Add Event
               </button>
             </div>
@@ -477,7 +477,7 @@ export default function App() {
           <div>
             {/* View mode toolbar */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18, flexWrap:"wrap", gap:8 }}>
-              <div style={{ display:"flex", gap:2, background:"#0e1116", border:"1px solid #1a2030", borderRadius:7, padding:2 }}>
+              <div style={{ display:"flex", gap:2, background:"#ffffff", border:"1px solid #dde4ed", borderRadius:7, padding:2 }}>
                 {["day","week","month"].map(m => (
                   <button key={m} className="btn" onClick={() => setViewMode(m)}
                     style={{ padding:"5px 14px", fontSize:9, borderRadius:5, background: viewMode===m?"#4a9eff22":"none", color: viewMode===m?"#4a9eff":"#4a5568", border: viewMode===m?"1px solid #4a9eff33":"1px solid transparent" }}>
@@ -486,7 +486,7 @@ export default function App() {
                 ))}
               </div>
               <button className="btn" onClick={goToday}
-                style={{ padding:"5px 14px", fontSize:9, color:"#52b788", border:"1px solid #52b78844", borderRadius:6, background:"#52b78811" }}>
+                style={{ padding:"5px 14px", fontSize:9, color:"#52b788", border:"1px solid #52b78844", borderRadius:6, background:"#edfaf3" }}>
                 Today
               </button>
             </div>
@@ -501,26 +501,26 @@ export default function App() {
               return (
                 <div>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                    <button className="btn" onClick={prevDay} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
+                    <button className="btn" onClick={prevDay} style={{ fontSize:16, color:"#5a6a7a", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
                     <div style={{ textAlign:"center" }}>
-                      <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#f0f4f8" }}>
+                      <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#0f1824" }}>
                         {d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}
                       </div>
                       {selDay===todayKey && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", letterSpacing:"0.1em" }}>TODAY</span>}
                     </div>
-                    <button className="btn" onClick={nextDay} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>›</button>
+                    <button className="btn" onClick={nextDay} style={{ fontSize:16, color:"#5a6a7a", border:"none", background:"none", padding:"4px 8px" }}>›</button>
                   </div>
                   {dayEntry ? (
                     <div style={{ background:ds.bg, border:`1px solid ${ds.accent}44`, borderLeft:`3px solid ${ds.accent}`, borderRadius:10, padding:"18px" }}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
                         <div>
                           <div style={{ fontSize:22 }}>{dayEntry.icon}</div>
-                          <div style={{ fontSize:15, fontWeight:600, color:"#d0dce8", marginTop:6 }}>{dayEntry.location}</div>
+                          <div style={{ fontSize:15, fontWeight:600, color:"#1e2d3d", marginTop:6 }}>{dayEntry.location}</div>
                         </div>
                         <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:ds.accent, border:`1px solid ${ds.accent}44`, padding:"3px 8px", borderRadius:3 }}>{ds.label}</span>
                       </div>
                       {dayEntry.items.map((item, j) => (
-                        <div key={j} style={{ fontSize:13, color:"#94a3b8", marginBottom:8, lineHeight:1.6, borderBottom:"1px solid #ffffff08", paddingBottom:8 }}>
+                        <div key={j} style={{ fontSize:13, color:"#4a6070", marginBottom:8, lineHeight:1.6, borderBottom:"1px solid #ffffff08", paddingBottom:8 }}>
                           <span style={{ color:ds.accent, marginRight:6, fontSize:10 }}>▸</span>
                           {item.label}
                           {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
@@ -528,7 +528,7 @@ export default function App() {
                       ))}
                     </div>
                   ) : (
-                    <div style={{ textAlign:"center", padding:"48px 16px", color:"#2d3a4a", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
+                    <div style={{ textAlign:"center", padding:"48px 16px", color:"#9aaabb", fontFamily:"'DM Mono',monospace", fontSize:11 }}>
                       <div style={{ fontSize:32, marginBottom:12 }}>—</div>
                       No plans for this day
                     </div>
@@ -542,15 +542,15 @@ export default function App() {
               return (
                 <div>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-                    <button className="btn" onClick={prevWeek} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
+                    <button className="btn" onClick={prevWeek} style={{ fontSize:16, color:"#5a6a7a", border:"none", background:"none", padding:"4px 8px" }}>‹</button>
                     <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#4a9eff", letterSpacing:"0.15em" }}>
                       {weekDays[0].toLocaleDateString("en-US",{month:"short",day:"numeric"})} – {weekDays[6].toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                     </div>
-                    <button className="btn" onClick={nextWeek} style={{ fontSize:16, color:"#4a5568", border:"none", background:"none", padding:"4px 8px" }}>›</button>
+                    <button className="btn" onClick={nextWeek} style={{ fontSize:16, color:"#5a6a7a", border:"none", background:"none", padding:"4px 8px" }}>›</button>
                   </div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:4 }}>
                     {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
-                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#2d3a4a", padding:"2px 0" }}>{d}</div>
+                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#9aaabb", padding:"2px 0" }}>{d}</div>
                     ))}
                   </div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4, marginBottom:16 }}>
@@ -576,11 +576,11 @@ export default function App() {
                     return (
                       <div className="ir" style={{ background:s.bg, border:`1px solid ${s.accent}44`, borderLeft:`3px solid ${s.accent}`, borderRadius:8, padding:"14px 16px" }}>
                         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10 }}>
-                          <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8" }}>{entry.icon} {entry.location}</div>
+                          <div style={{ fontSize:13, fontWeight:600, color:"#1e2d3d" }}>{entry.icon} {entry.location}</div>
                           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
                         </div>
                         {entry.items.map((item, j) => (
-                          <div key={j} style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
+                          <div key={j} style={{ fontSize:12, color:"#4a6070", marginBottom:5, lineHeight:1.5 }}>
                             <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
                             {item.label}
                             {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
@@ -590,7 +590,7 @@ export default function App() {
                     );
                   })()}
                   {selDay && !dayMap[selDay] && (
-                    <div style={{ textAlign:"center", padding:"24px", color:"#2d3a4a", fontFamily:"'DM Mono',monospace", fontSize:10 }}>No plans for this day</div>
+                    <div style={{ textAlign:"center", padding:"24px", color:"#9aaabb", fontFamily:"'DM Mono',monospace", fontSize:10 }}>No plans for this day</div>
                   )}
                 </div>
               );
@@ -615,7 +615,7 @@ export default function App() {
                   </div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:2 }}>
                     {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
-                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#2d3a4a", padding:"2px 0" }}>{d}</div>
+                      <div key={d} style={{ textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:8, color:"#9aaabb", padding:"2px 0" }}>{d}</div>
                     ))}
                   </div>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
@@ -640,7 +640,7 @@ export default function App() {
                       );
                     })}
                   </div>
-                  {!hasTrips && <div style={{ textAlign:"center", padding:"12px 0", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#1e2a38" }}>— no trips added yet —</div>}
+                  {!hasTrips && <div style={{ textAlign:"center", padding:"12px 0", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#c8d4e0" }}>— no trips added yet —</div>}
                   {/* Day detail panel */}
                   {selDay && dayMap[selDay] && (() => {
                     const [sy,sm,sd] = selDay.split("-").map(Number);
@@ -650,11 +650,11 @@ export default function App() {
                     return (
                       <div className="ir" style={{ marginTop:10, background:s.bg, border:`1px solid ${s.accent}44`, borderLeft:`3px solid ${s.accent}`, borderRadius:8, padding:"12px 14px" }}>
                         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-                          <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8" }}>{entry.icon} {entry.location}</div>
+                          <div style={{ fontSize:13, fontWeight:600, color:"#1e2d3d" }}>{entry.icon} {entry.location}</div>
                           <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
                         </div>
                         {entry.items.map((item, j) => (
-                          <div key={j} style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
+                          <div key={j} style={{ fontSize:12, color:"#4a6070", marginBottom:5, lineHeight:1.5 }}>
                             <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
                             {item.label}
                             {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
@@ -674,30 +674,30 @@ export default function App() {
           const ip = f.status==="pending"; const acc = ip?"#e8a735":"#4a9eff";
           const pc = f.pax==="NICK & MIRIAM"?"#c47fd5": f.pax==="FULL TEAM"?"#d4a843":"#5b8fa8";
           return (
-            <div key={i} style={{ background: ip?"#141008":"#0e1420", border:`1px solid ${acc}33`, borderLeft:`3px solid ${acc}`, borderRadius:8, padding:"14px 16px", marginBottom:10 }}>
+            <div key={i} style={{ background: ip?"#fffbf0":"#f0f6ff", border:`1px solid ${acc}33`, borderLeft:`3px solid ${acc}`, borderRadius:8, padding:"14px 16px", marginBottom:10 }}>
               <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:6, marginBottom:10 }}>
                 <div>
                   <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
                     <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:acc, letterSpacing:"0.18em", textTransform:"uppercase" }}>{f.direction}</span>
                     {f.pax && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:pc, background:pc+"18", border:`1px solid ${pc}44`, padding:"2px 6px", borderRadius:3 }}>{f.pax}</span>}
                   </div>
-                  <div style={{ fontSize:13, fontWeight:500, color:"#d0dce8", marginTop:2 }}>{f.date}</div>
+                  <div style={{ fontSize:13, fontWeight:500, color:"#1e2d3d", marginTop:2 }}>{f.date}</div>
                 </div>
                 {f.conf
-                  ? <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", background:"#0d1f17", border:"1px solid #2d6a4f44", padding:"3px 8px", borderRadius:3 }}>✓ {f.conf}</span>
-                  : <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#e8a735", background:"#1a1508", border:"1px solid #e8a73544", padding:"3px 8px", borderRadius:3 }}>BOOK</span>
+                  ? <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", background:"#e8f5ee", border:"1px solid #2d6a4f44", padding:"3px 8px", borderRadius:3 }}>✓ {f.conf}</span>
+                  : <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#e8a735", background:"#fef9ec", border:"1px solid #e8a73544", padding:"3px 8px", borderRadius:3 }}>BOOK</span>
                 }
               </div>
               {f.segments.map((seg, j) => (
                 <div key={j} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:7, flexWrap:"wrap" }}>
                   <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:acc, minWidth:50 }}>{seg.flight}</span>
-                  <span style={{ fontSize:14, fontWeight:600, color:"#e0e8f0" }}>{seg.route}</span>
-                  <span style={{ fontSize:11, color:"#7090a8" }}>{seg.depart} → {seg.arrive}</span>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#0e1820", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
-                  {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#7090a8" }}>Seat {seg.seat}</span>}
+                  <span style={{ fontSize:14, fontWeight:600, color:"#1a2a3a" }}>{seg.route}</span>
+                  <span style={{ fontSize:11, color:"#5a7080" }}>{seg.depart} → {seg.arrive}</span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#eef4fa", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
+                  {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5a7080" }}>Seat {seg.seat}</span>}
                 </div>
               ))}
-              <div style={{ fontSize:11, color:"#5a6a7a", marginTop:6, paddingTop:6, borderTop:`1px solid ${acc}18`, fontStyle:"italic" }}>{f.notes}</div>
+              <div style={{ fontSize:11, color:"#6a7a8a", marginTop:6, paddingTop:6, borderTop:`1px solid ${acc}18`, fontStyle:"italic" }}>{f.notes}</div>
             </div>
           );
         })}
@@ -706,26 +706,26 @@ export default function App() {
         {activeTab === "hotels" && hotels.map((h, i) => {
           const ip = h.status==="pending"; const acc = ip?"#e8a735":"#52b788";
           return (
-            <div key={i} style={{ background: ip?"#141008":"#0d1510", border:`1px solid ${acc}33`, borderLeft:`3px solid ${acc}`, borderRadius:8, padding:"14px 16px", marginBottom:10 }}>
+            <div key={i} style={{ background: ip?"#fffbf0":"#f0faf4", border:`1px solid ${acc}33`, borderLeft:`3px solid ${acc}`, borderRadius:8, padding:"14px 16px", marginBottom:10 }}>
               <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:6, marginBottom:8 }}>
                 <div>
-                  <div style={{ fontSize:14, fontWeight:600, color:"#d4e8d4" }}>{h.name}</div>
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#7090a8", marginTop:3 }}>{h.location}</div>
+                  <div style={{ fontSize:14, fontWeight:600, color:"#1a3a2a" }}>{h.name}</div>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5a7080", marginTop:3 }}>{h.location}</div>
                 </div>
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:acc, background: ip?"#1a1508":"#0d1f17", border:`1px solid ${acc}44`, padding:"3px 8px", borderRadius:3 }}>{ip?"TO BOOK":"✓ CONFIRMED"}</span>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:acc, background: ip?"#fef9ec":"#e8f5ee", border:`1px solid ${acc}44`, padding:"3px 8px", borderRadius:3 }}>{ip?"TO BOOK":"✓ CONFIRMED"}</span>
               </div>
               <div style={{ display:"flex", gap:20, flexWrap:"wrap", marginBottom:8 }}>
                 {[["WHO",h.who],["CHECK-IN",h.checkin],["CHECK-OUT",h.checkout],["NIGHTS",h.nights]].map(([k,v]) => (
                   <div key={k}>
                     <div style={{ fontFamily:"'DM Mono',monospace", fontSize:7, color:"#4a6a5a", letterSpacing:"0.12em", marginBottom:2 }}>{k}</div>
-                    <div style={{ fontSize:12, color:"#94a3b8" }}>{v}</div>
+                    <div style={{ fontSize:12, color:"#4a6070" }}>{v}</div>
                   </div>
                 ))}
               </div>
               {h.conf!=="—" && <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", marginBottom:5 }}>CONF {h.conf}</div>}
-              {h.price!=="—" && <div style={{ fontSize:11, color:"#7090a8", marginBottom:5 }}>{h.price}</div>}
+              {h.price!=="—" && <div style={{ fontSize:11, color:"#5a7080", marginBottom:5 }}>{h.price}</div>}
               {h.cancel!=="—" && <div style={{ fontSize:11, color: h.cancel.includes("⚠️")?"#e8a735":"#5a6a7a", marginBottom:5 }}>{h.cancel}</div>}
-              <div style={{ fontSize:11, color:"#5a6a7a", fontStyle:"italic", lineHeight:1.5 }}>{h.notes}</div>
+              <div style={{ fontSize:11, color:"#6a7a8a", fontStyle:"italic", lineHeight:1.5 }}>{h.notes}</div>
             </div>
           );
         })}
@@ -733,7 +733,7 @@ export default function App() {
         {/* ── CALENDAR TAB ─────────────────────────────────────────────────────── */}
         {activeTab === "calendar" && (
           <div>
-            <div style={{ fontSize:13, color:"#5a6a7a", marginBottom:18, lineHeight:1.6 }}>Click any event to open Google Calendar pre-filled. Choose a category:</div>
+            <div style={{ fontSize:13, color:"#6a7a8a", marginBottom:18, lineHeight:1.6 }}>Click any event to open Google Calendar pre-filled. Choose a category:</div>
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {calendarEvents.map(cat => (
                 <button key={cat.category} onClick={() => setCalCat(cat.category)}
@@ -747,17 +747,17 @@ export default function App() {
             </div>
             {calendarEvents.find(c => c.category===calCat)?.events.map((ev, i) => (
               <a key={i} href={gCal(ev)} target="_blank" rel="noopener noreferrer" className="cb"
-                style={{ display:"block", background:"#0e1116", border:"1px solid #1a2030", borderLeft:"3px solid #4a9eff", borderRadius:8, padding:"12px 16px", marginBottom:8 }}>
+                style={{ display:"block", background:"#ffffff", border:"1px solid #dde4ed", borderLeft:"3px solid #4a9eff", borderRadius:8, padding:"12px 16px", marginBottom:8 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10, flexWrap:"wrap" }}>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8", marginBottom:4 }}>{ev.title}</div>
+                    <div style={{ fontSize:13, fontWeight:600, color:"#1e2d3d", marginBottom:4 }}>{ev.title}</div>
                     <div style={{ fontSize:11, color:"#5b8fa8", fontFamily:"'DM Mono',monospace", marginBottom: ev.location?3:0 }}>
                       {ev.allDay!==false ? `${ev.start} → ${ev.end} · All day` : "Timed event"}
                     </div>
                     {ev.location && <div style={{ fontSize:11, color:"#4a5a6a" }}>📍 {ev.location}</div>}
                     {ev.description && <div style={{ fontSize:11, color:"#4a5a6a", marginTop:3, fontStyle:"italic" }}>{ev.description}</div>}
                   </div>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", background:"#0e1f30", border:"1px solid #4a9eff44", padding:"4px 10px", borderRadius:5, whiteSpace:"nowrap" }}>+ Add to Cal</span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", background:"#e0eeff", border:"1px solid #4a9eff44", padding:"4px 10px", borderRadius:5, whiteSpace:"nowrap" }}>+ Add to Cal</span>
                 </div>
               </a>
             ))}
@@ -775,17 +775,17 @@ export default function App() {
               return (
                 <div key={status} style={{ marginBottom:18 }}>
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.15em", color:cfg.text, textTransform:"uppercase", marginBottom:7, display:"flex", alignItems:"center", gap:7 }}>
-                    <span>{cfg.icon}</span> {labels[status]} <span style={{ color:"#2d3748" }}>({items.length})</span>
+                    <span>{cfg.icon}</span> {labels[status]} <span style={{ color:"#8a9ab0" }}>({items.length})</span>
                   </div>
                   {items.map((item) => (
-                    <div key={item.id} style={{ background:cfg.bg, border:`1px solid ${cfg.color}33`, borderLeft:`3px solid ${cfg.color}`, borderRadius:6, padding:"9px 13px", marginBottom:5, fontSize:12, color: status==="done"?"#52876e":"#c0c8d8", display:"flex", alignItems:"flex-start", gap:9, justifyContent:"space-between" }}>
+                    <div key={item.id} style={{ background:cfg.bg, border:`1px solid ${cfg.color}33`, borderLeft:`3px solid ${cfg.color}`, borderRadius:6, padding:"9px 13px", marginBottom:5, fontSize:12, color: status==="done"?"#1a5a38":"#1e2d3d", display:"flex", alignItems:"flex-start", gap:9, justifyContent:"space-between" }}>
                       <div style={{ display:"flex", alignItems:"flex-start", gap:9, flex:1 }}>
                         <span style={{ color:cfg.text, fontSize:12, minWidth:14, marginTop:1 }}>{cfg.icon}</span>
                         {item.label}
                       </div>
                       {status !== "done" && (
                         <button className="btn" onClick={() => { setMarkingId(item.id); setConfInput(""); }}
-                          style={{ fontSize:8, color:"#52b788", border:"1px solid #52b78844", borderRadius:4, padding:"2px 8px", background:"#0d1f17", flexShrink:0, marginLeft:8 }}>
+                          style={{ fontSize:8, color:"#52b788", border:"1px solid #52b78844", borderRadius:4, padding:"2px 8px", background:"#e8f5ee", flexShrink:0, marginLeft:8 }}>
                           Mark Done
                         </button>
                       )}
@@ -804,34 +804,34 @@ export default function App() {
               <div style={{ maxWidth:340, margin:"60px auto", textAlign:"center" }}>
                 <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
                 <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#c47fd5", marginBottom:6 }}>Private</div>
-                <div style={{ fontSize:13, color:"#5a6070", marginBottom:28, fontStyle:"italic" }}>Password protected.</div>
+                <div style={{ fontSize:13, color:"#6a7080", marginBottom:28, fontStyle:"italic" }}>Password protected.</div>
                 <input type="password" value={pwInput} onChange={e => { setPwInput(e.target.value); setPwError(false); }} onKeyDown={e => e.key==="Enter" && tryUnlock()} placeholder="Enter password"
-                  style={{ width:"100%", padding:"12px 16px", background:"#0e1116", border:`1px solid ${pwError?"#e05252":"#2a3040"}`, borderRadius:8, color:"#e2e8f0", fontSize:16, fontFamily:"'DM Mono',monospace", letterSpacing:"0.3em", textAlign:"center", outline:"none", marginBottom:8 }} />
+                  style={{ width:"100%", padding:"12px 16px", background:"#ffffff", border:`1px solid ${pwError?"#e05252":"#c8d4e0"}`, borderRadius:8, color:"#1a2230", fontSize:16, fontFamily:"'DM Mono',monospace", letterSpacing:"0.3em", textAlign:"center", outline:"none", marginBottom:8 }} />
                 {pwError && <div style={{ fontSize:11, color:"#e05252", marginBottom:10 }}>Incorrect password</div>}
-                <button onClick={tryUnlock} style={{ width:"100%", padding:"12px", background:"#1a1020", border:"1px solid #c47fd555", borderRadius:8, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:"0.15em", textTransform:"uppercase", cursor:"pointer" }}>Unlock</button>
+                <button onClick={tryUnlock} style={{ width:"100%", padding:"12px", background:"#f8f0ff", border:"1px solid #c47fd555", borderRadius:8, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:11, letterSpacing:"0.15em", textTransform:"uppercase", cursor:"pointer" }}>Unlock</button>
               </div>
             ) : (
               <div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
                   <div>
                     <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:22, color:"#c47fd5" }}>Private Plans</div>
-                    <div style={{ fontSize:11, color:"#5a4a6a", fontStyle:"italic", marginTop:2 }}>Eyes only</div>
+                    <div style={{ fontSize:11, color:"#6a5a7a", fontStyle:"italic", marginTop:2 }}>Eyes only</div>
                   </div>
                   <button onClick={() => { setUnlocked(false); setPwInput(""); }} style={{ background:"none", border:"1px solid #c47fd544", borderRadius:6, color:"#c47fd5", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.12em", padding:"5px 12px", cursor:"pointer" }}>🔒 LOCK</button>
                 </div>
-                <div style={{ background:"#120a1a", border:"1px solid #c47fd544", borderLeft:"3px solid #c47fd5", borderRadius:10, padding:"18px", marginBottom:14 }}>
+                <div style={{ background:"#fdf6ff", border:"1px solid #c47fd544", borderLeft:"3px solid #c47fd5", borderRadius:10, padding:"18px", marginBottom:14 }}>
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.2em", color:"#c47fd5", textTransform:"uppercase", marginBottom:12 }}>🎂 Miriam's Birthday — Thu Jul 9</div>
-                  <div style={{ fontSize:15, fontWeight:600, color:"#e0c8f0" }}>Matsuhisa at Cala di Volpe</div>
-                  <div style={{ fontSize:12, color:"#9a7ab0", marginTop:4 }}>Thursday, 9 July · 8:30pm – 10:30pm · 2 guests</div>
+                  <div style={{ fontSize:15, fontWeight:600, color:"#3a1a5a" }}>Matsuhisa at Cala di Volpe</div>
+                  <div style={{ fontSize:12, color:"#6a4a8a", marginTop:4 }}>Thursday, 9 July · 8:30pm – 10:30pm · 2 guests</div>
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#7a5a8a", marginTop:6 }}>Conf: OLBLC-7LP3473BD2KD</div>
-                  <div style={{ fontSize:11, color:"#6a5a7a", marginTop:2 }}>Hotel Cala di Volpe · Porto Cervo · +39 0789 976632</div>
+                  <div style={{ fontSize:11, color:"#7a6a8a", marginTop:2 }}>Hotel Cala di Volpe · Porto Cervo · +39 0789 976632</div>
                   {[{icon:"👔",text:"Formal or smart casual · long trousers · no beach attire"},{icon:"💳",text:"Cancel 24hrs+ in advance or €150/person charged"},{icon:"📍",text:"Arrive by water taxi from Porto Cervo"}].map((n,i) => (
-                    <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start", background:"#0d0814", borderRadius:6, padding:"7px 10px", marginTop:6 }}>
+                    <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start", background:"#f5f0fa", borderRadius:6, padding:"7px 10px", marginTop:6 }}>
                       <span style={{ fontSize:12 }}>{n.icon}</span>
-                      <span style={{ fontSize:11, color:"#8a7a9a", lineHeight:1.5 }}>{n.text}</span>
+                      <span style={{ fontSize:11, color:"#6a5a7a", lineHeight:1.5 }}>{n.text}</span>
                     </div>
                   ))}
-                  <div style={{ borderTop:"1px solid #c47fd522", paddingTop:14, marginTop:14 }}>
+                  <div style={{ borderTop:"1px solid #e8d0f8", paddingTop:14, marginTop:14 }}>
                     <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#7a5a8a", letterSpacing:"0.12em", marginBottom:8 }}>DAY PLAN</div>
                     {[["Morning","TBD — add activity ideas"],["Afternoon","TBD — beach / boat / spa?"],["Evening · 8:30pm","Matsuhisa at Cala di Volpe ✓"]].map(([t,n],i) => (
                       <div key={i} style={{ display:"flex", gap:12, marginBottom:8 }}>
@@ -841,7 +841,7 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-                <div style={{ background:"#0a0f16", border:"1px solid #4a9eff44", borderLeft:"3px solid #4a9eff", borderRadius:10, padding:"18px" }}>
+                <div style={{ background:"#f0f6ff", border:"1px solid #4a9eff44", borderLeft:"3px solid #4a9eff", borderRadius:10, padding:"18px" }}>
                   <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:12 }}>💍 The Proposal</div>
                   {[["DATE","TBD"],["LOCATION","TBD"],["DETAILS","TBD"],["RING","TBD"]].map(([k,v]) => (
                     <div key={k} style={{ display:"flex", gap:12, marginBottom:8 }}>
@@ -849,7 +849,7 @@ export default function App() {
                       <div style={{ fontSize:13, color:"#4a6a8a", fontStyle:"italic" }}>{v}</div>
                     </div>
                   ))}
-                  <div style={{ fontSize:11, color:"#2a4a6a", fontStyle:"italic", borderTop:"1px solid #4a9eff18", paddingTop:10, marginTop:4 }}>Tell Claude the details to fill this in.</div>
+                  <div style={{ fontSize:11, color:"#3a5a7a", fontStyle:"italic", borderTop:"1px solid #c8deff", paddingTop:10, marginTop:4 }}>Tell Claude the details to fill this in.</div>
                 </div>
               </div>
             )}
@@ -868,12 +868,12 @@ export default function App() {
             {searchQ.length >= 2 && (
               <div>
                 {searchResults.length === 0
-                  ? <div style={{ fontSize:12, color:"#3a4a5a", padding:"12px 0", fontStyle:"italic" }}>No results found</div>
+                  ? <div style={{ fontSize:12, color:"#5a6a7a", padding:"12px 0", fontStyle:"italic" }}>No results found</div>
                   : searchResults.map((r, i) => (
-                    <div key={i} className="sr-result" style={{ display:"flex", gap:10, alignItems:"flex-start", padding:"10px 10px", background:"#0a1018", border:"1px solid #1a2030", borderRadius:6, marginBottom:6, cursor:"default" }}>
+                    <div key={i} className="sr-result" style={{ display:"flex", gap:10, alignItems:"flex-start", padding:"10px 10px", background:"#f4f7fb", border:"1px solid #dde4ed", borderRadius:6, marginBottom:6, cursor:"default" }}>
                       <span style={{ fontSize:18, minWidth:24 }}>{r.icon}</span>
                       <div>
-                        <div style={{ fontSize:12, fontWeight:500, color:"#d0dce8" }}>{r.title}</div>
+                        <div style={{ fontSize:12, fontWeight:500, color:"#1e2d3d" }}>{r.title}</div>
                         <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a6a7a", marginTop:2 }}>{r.type.toUpperCase()} · {r.subtitle}</div>
                       </div>
                     </div>
@@ -884,7 +884,7 @@ export default function App() {
             {searchQ.length < 2 && (
               <div style={{ fontSize:11, color:"#2a3a4a", fontStyle:"italic" }}>Type at least 2 characters to search across all itinerary, flights, and hotels</div>
             )}
-            <button className="btn" onClick={() => { setSearchOpen(false); setSearchQ(""); }} style={{ marginTop:16, fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:5, padding:"6px 14px", background:"none" }}>Close</button>
+            <button className="btn" onClick={() => { setSearchOpen(false); setSearchQ(""); }} style={{ marginTop:16, fontSize:9, color:"#5a6a7a", border:"1px solid #dde4ed", borderRadius:5, padding:"6px 14px", background:"none" }}>Close</button>
           </div>
         </div>
       )}
@@ -918,20 +918,20 @@ export default function App() {
 
             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
               <button className="btn" onClick={generateLink} disabled={!form.title||!form.date}
-                style={{ flex:1, padding:"10px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff55", borderRadius:7, background:"#4a9eff11", opacity: (!form.title||!form.date)?0.4:1 }}>
+                style={{ flex:1, padding:"10px", fontSize:9, color:"#4a9eff", border:"1px solid #4a9eff55", borderRadius:7, background:"#eef6ff", opacity: (!form.title||!form.date)?0.4:1 }}>
                 Generate Calendar Link
               </button>
-              <button className="btn" onClick={() => setAddOpen(false)} style={{ padding:"10px 14px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:7, background:"none" }}>Cancel</button>
+              <button className="btn" onClick={() => setAddOpen(false)} style={{ padding:"10px 14px", fontSize:9, color:"#5a6a7a", border:"1px solid #dde4ed", borderRadius:7, background:"none" }}>Cancel</button>
             </div>
 
             {generatedLink && (
-              <div className="ir" style={{ marginTop:16, background:"#0d1f17", border:"1px solid #2d6a4f44", borderRadius:8, padding:"14px" }}>
+              <div className="ir" style={{ marginTop:16, background:"#e8f5ee", border:"1px solid #2d6a4f44", borderRadius:8, padding:"14px" }}>
                 <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", marginBottom:8 }}>✓ CALENDAR LINK READY</div>
-                <div style={{ fontSize:11, color:"#5a8a6a", marginBottom:12, lineHeight:1.5 }}>
+                <div style={{ fontSize:11, color:"#2a6a4a", marginBottom:12, lineHeight:1.5 }}>
                   Opens Google Calendar with <strong style={{color:"#7ab890"}}>Nick & Miriam</strong> pre-added as guests. Each person will receive a calendar invite.
                 </div>
                 <a href={generatedLink} target="_blank" rel="noopener noreferrer"
-                  style={{ display:"block", textAlign:"center", padding:"10px", background:"#1a3a28", border:"1px solid #52b78855", borderRadius:6, color:"#52b788", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textDecoration:"none" }}>
+                  style={{ display:"block", textAlign:"center", padding:"10px", background:"#d4f0e0", border:"1px solid #52b78855", borderRadius:6, color:"#52b788", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textDecoration:"none" }}>
                   → Open in Google Calendar
                 </a>
               </div>
@@ -947,7 +947,7 @@ export default function App() {
           <div className="overlay fadeIn" onClick={() => setMarkingId(null)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth:400 }}>
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"#52b788", letterSpacing:"0.15em", marginBottom:10 }}>MARK AS DONE</div>
-              <div style={{ fontSize:12, color:"#7090a8", marginBottom:16, lineHeight:1.5, borderBottom:"1px solid #1a2030", paddingBottom:16 }}>{item?.label}</div>
+              <div style={{ fontSize:12, color:"#5a7080", marginBottom:16, lineHeight:1.5, borderBottom:"1px solid #dde4ed", paddingBottom:16 }}>{item?.label}</div>
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:"#4a6a5a", letterSpacing:"0.12em", marginBottom:6 }}>Confirmation Number (optional)</div>
               <input autoFocus value={confInput} onChange={e => setConfInput(e.target.value)}
                 onKeyDown={e => e.key==="Enter" && markDone(markingId)}
@@ -955,17 +955,17 @@ export default function App() {
                 style={{ ...inputStyle, marginBottom:14 }} />
               <div style={{ display:"flex", gap:8 }}>
                 <button className="btn" onClick={() => markDone(markingId)}
-                  style={{ flex:1, padding:"10px", fontSize:9, color:"#52b788", border:"1px solid #52b78855", borderRadius:7, background:"#0d1f17" }}>
+                  style={{ flex:1, padding:"10px", fontSize:9, color:"#52b788", border:"1px solid #52b78855", borderRadius:7, background:"#e8f5ee" }}>
                   ✓ Mark Done
                 </button>
-                <button className="btn" onClick={() => setMarkingId(null)} style={{ padding:"10px 14px", fontSize:9, color:"#4a5568", border:"1px solid #1a2030", borderRadius:7, background:"none" }}>Cancel</button>
+                <button className="btn" onClick={() => setMarkingId(null)} style={{ padding:"10px 14px", fontSize:9, color:"#5a6a7a", border:"1px solid #dde4ed", borderRadius:7, background:"none" }}>Cancel</button>
               </div>
             </div>
           </div>
         );
       })()}
 
-      <div style={{ maxWidth:700, margin:"28px auto 0", padding:"0 16px 28px", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&M TRAVEL · 2026 · KISLINGER IMPACT COLLECTIVE</div>
+      <div style={{ maxWidth:700, margin:"28px auto 0", padding:"0 16px 28px", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#9aaabb", letterSpacing:"0.1em" }}>N&M TRAVEL · 2026 · KISLINGER IMPACT COLLECTIVE</div>
     </div>
   );
 }
