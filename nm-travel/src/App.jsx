@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const gCal = ({ title, start, end, allDay = true, location = "", description = "" }) => {
   const fmt = (d) => d.replace(/-/g, "");
@@ -7,10 +7,12 @@ const gCal = ({ title, start, end, allDay = true, location = "", description = "
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
+const TODAY = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
+
 const calendarEvents = [
   { category: "Flights", events: [
-    { title: "✈️ UA 2791 · Denver → LAX", start: "20260602T014300Z", end: "20260602T040800Z", allDay: false, location: "Denver International Airport (DEN)", description: "United First · Seat 3F · Conf LX1C9J · Nick only" },
-    { title: "✈️ DL 2148 · LAX → Denver", start: "20260605T153000Z", end: "20260605T191900Z", allDay: false, location: "LAX Terminal 3", description: "Main Classic · Seat 14A · Conf JJWPVK · Nick only · Airbus A319" },
+    { title: "✈️ DL 1729 · LAX → Denver", start: "20260601T201400Z", end: "20260602T052800Z", allDay: false, location: "LAX Terminal 3", description: "Delta First Extra · Seat 3A · Nonstop · Conf GS34NP" },
+    { title: "✈️ DL 2176 · Denver → LAX", start: "20260602T203000Z", end: "20260602T230400Z", allDay: false, location: "Denver International Airport", description: "Conf GS34NP · Nick Only" },
     { title: "✈️ DL 914 · LAX → MSP", start: "20260624T193500Z", end: "20260625T011300Z", allDay: false, location: "Los Angeles International Airport", description: "Delta First · Seat 2D · Conf G4DQXX" },
     { title: "✈️ DL 162 · MSP → Amsterdam", start: "20260625T013000Z", end: "20260625T151000Z", allDay: false, location: "Minneapolis-St Paul Airport", description: "Delta One · Seat 5J · Conf G4DQXX" },
     { title: "✈️ DL 9185 · AMS → Athens", start: "20260625T102500Z", end: "20260625T143000Z", allDay: false, location: "Amsterdam Schiphol Airport", description: "KLM Economy · Seat 8F · Conf G4DQXX" },
@@ -18,28 +20,33 @@ const calendarEvents = [
     { title: "✈️ XZ2510 · Alghero → Rome FCO", start: "20260712T051000Z", end: "20260712T061000Z", allDay: false, location: "Alghero Airport (AHO)", description: "Aeroitalia · Seat 1C · Conf N6358P · Depart villa 4:30am" },
     { title: "✈️ DL 215 · Rome FCO → Atlanta", start: "20260712T074500Z", end: "20260712T193000Z", allDay: false, location: "Rome Fiumicino T3", description: "Premium Select · Conf G4RYXA" },
     { title: "✈️ DL 500 · Atlanta → LAX", start: "20260712T210000Z", end: "20260713T033000Z", allDay: false, location: "Atlanta Hartsfield Airport", description: "Premium Select · Conf G4RYXA · Arrive LAX 7:30pm" },
-    { title: "✈️ DL 1045 · LAX → Seattle", start: "20260713T190900Z", end: "20260713T215500Z", allDay: false, location: "Los Angeles International Airport", description: "SkyMiles Award · Conf JMFNIL · Nick & Miriam · ⚠️ CONFLICTS with Kenmore 1:30pm — needs rebooking" },
-    { title: "✈️ M5 6440 · Boeing Field → Orcas Island", start: "20260713T203000Z", end: "20260713T211000Z", allDay: false, location: "Boeing Field (BFI), 7277 Perimeter Rd S, Seattle, WA 98108", description: "Kenmore Air · Conf 004Y5F · Nick & Miriam · Arrive Eastsound Airport (ESD) · $575.96" },
-    { title: "✈️ M5 6440 · Orcas → Boeing Field (Europe depart)", start: "20260716T212500Z", end: "20260716T223000Z", allDay: false, location: "Eastsound Airport (ESD), 147 Schoen Ln, Eastsound, WA", description: "Kenmore Air · Conf 004Y5E · Nick only · To catch DL 80 SEA→CDG" },
-    { title: "✈️ DL 80 · Seattle → Paris CDG", start: "20260717T013500Z", end: "20260717T215000Z", allDay: false, location: "Seattle-Tacoma International Airport (SEA)", description: "Delta One Classic · Seat 2J · Conf HBS2FX · Nick only · $5,581.33" },
-    { title: "✈️ DL 8764 · Paris CDG → Seattle (Air France)", start: "20260718T081000Z", end: "20260718T181500Z", allDay: false, location: "Paris Charles de Gaulle Airport (CDG)", description: "Air France Premium · Conf HBS2FX · Nick only · Operated by Air France" },
-    { title: "✈️ M5 6440 · Boeing Field → Orcas (Europe return)", start: "20260718T203000Z", end: "20260718T211000Z", allDay: false, location: "Boeing Field (BFI), 7277 Perimeter Rd S, Seattle, WA", description: "Kenmore Air · Conf 004Y5E · Nick only · Return to Orcas from Paris trip" },
+    { title: "✈️ DL 1045 · LAX → Seattle", start: "20260713T164500Z", end: "20260713T195500Z", allDay: false, location: "Los Angeles International Airport", description: "SkyMiles Award · Conf JMFNIL · Nick & Miriam · 9:45am departure" },
+    { title: "✈️ M5 6440 · Boeing Field → Orcas Island", start: "20260713T203000Z", end: "20260713T211000Z", allDay: false, location: "Boeing Field (BFI), Seattle", description: "Kenmore Air · Conf 004Y5F · Nick & Miriam · $575.96 · Arrive Eastsound 2:10pm" },
+    { title: "✈️ DL 80 · SEA → Paris CDG", start: "20260716T013500Z", end: "20260717T015000Z", allDay: false, location: "Seattle-Tacoma International Airport", description: "Delta One Classic · Seat 2J · Conf HBS2FX · Nick Only" },
+    { title: "✈️ DL 8764 (AF) · CDG → SEA", start: "20260718T081000Z", end: "20260718T191500Z", allDay: false, location: "Paris Charles de Gaulle Airport", description: "Air France Premium · Conf HBS2FX · Nick Only · Operated by Air France" },
+    { title: "✈️ DL 2914 · SEA → LAX", start: "20260723T193500Z", end: "20260723T222300Z", allDay: false, location: "Seattle-Tacoma International Airport", description: "Delta Main Classic · Conf JP7GGW · Nick & Miriam" },
+    { title: "✈️ DL 3704 · LAX → Aspen", start: "20260724T001200Z", end: "20260724T032500Z", allDay: false, location: "Los Angeles International Airport", description: "Delta Connection (SkyWest) · Conf JP7GGW · Nick & Miriam · Arrive ASE 8:25pm" },
   ]},
   { category: "Hotels", events: [
+    { title: "🏙️ Thompson Denver, by Hyatt", start: "2026-06-01", end: "2026-06-02", allDay: true, location: "1616 Market Street, Denver, CO 80202", description: "Nick · Conf #40023B19168977 · Check-in 3pm · Check-out 11am" },
     { title: "🏝️ Dreams Corfu Resort & Spa", start: "2026-06-26", end: "2026-06-29", allDay: true, location: "Gouvia, Corfu, Greece", description: "Nick & Miriam · Bungalow Garden View · All-inclusive · Conf #42609271" },
     { title: "🏛️ Monument Athens", start: "2026-06-29", end: "2026-07-01", allDay: true, location: "Kalamida 11, Athens, Greece", description: "Nick & Miriam · Sepia room · Breakfast included · Conf #48859741" },
     { title: "🌋 Villa Don Giovanni, Taormina", start: "2026-07-01", end: "2026-07-06", allDay: true, location: "Via Nazionale - Mazzarò, Taormina, Sicily", description: "Nick + Team · Conf #6775.843.228 · PIN 4148 · Cash on arrival · Private pool" },
     { title: "🌊 Villa Cala Bitta, Sardinia", start: "2026-07-06", end: "2026-07-13", allDay: true, location: "Vaddi di Jatta 33, Arzachena, Sardinia", description: "Nick + Team · Conf #5060.372.552 · PIN 1915 · Private pool · Costa Smeralda" },
     { title: "🌲 Orcas Island Accommodation", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Nick, Miriam + Family" },
+    { title: "🏙️ Hotel 1000 Seattle", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "1000 1st Avenue, Seattle, WA 98104", description: "Nick & Miriam · Conf #40023B18869296 · Hyatt free night · With Molly & Miles" },
+    { title: "⛰️ Aspen Hotel (TBD)", start: "2026-07-23", end: "2026-07-28", allDay: true, location: "Aspen, CO", description: "Nick & Miriam · Big Green Sat Jul 25 · TO BOOK" },
   ]},
   { category: "Trip Segments", events: [
-    { title: "🇬🇷 Corfu, Greece", start: "2026-06-25", end: "2026-06-29", allDay: true, location: "Corfu, Greece", description: "Team base · Dreams Corfu for Nick & Miriam from Jun 26 (#42609271) · Folies for team (#5071.167.071)" },
+    { title: "🏙️ Denver, CO", start: "2026-06-01", end: "2026-06-02", allDay: true, location: "Denver, CO", description: "Nick · Thompson Denver · Conf #40023B19168977" },
+    { title: "🇬🇷 Corfu, Greece", start: "2026-06-25", end: "2026-06-29", allDay: true, location: "Corfu, Greece", description: "Team base · Dreams Corfu for Nick & Miriam (#42609271) · Folies for team (#5071.167.071)" },
     { title: "🏛️ Athens, Greece", start: "2026-06-29", end: "2026-07-01", allDay: true, location: "Athens, Greece", description: "Nick & Miriam · Acropolis tour · Monument Athens (#48859741)" },
     { title: "🌋 Taormina, Sicily", start: "2026-07-01", end: "2026-07-06", allDay: true, location: "Taormina, Sicily, Italy", description: "Nick + Team · Villa Don Giovanni · Client events Jul 4–5" },
     { title: "🌊 Sardinia, Italy", start: "2026-07-06", end: "2026-07-13", allDay: true, location: "Sardinia, Italy", description: "Nick + Team · Villa Cala Bitta · Client events Jul 10–11 · Miriam's birthday Jul 9" },
-    { title: "🌲 Orcas Island, WA", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Family vacation · Nick, Miriam + family" },
+    { title: "🌲 Orcas Island, WA", start: "2026-07-13", end: "2026-07-19", allDay: true, location: "Orcas Island, WA", description: "Family vacation · Nick, Miriam + family · Nick departs Jul 16 for Paris, returns Jul 18" },
+    { title: "🗼 Paris, France", start: "2026-07-16", end: "2026-07-19", allDay: true, location: "Paris, France", description: "Nick only · DL 80 out · DL 8764 (AF) return · Conf HBS2FX" },
     { title: "🏡 Vashon — Savannah & Noah", start: "2026-07-19", end: "2026-07-21", allDay: true, location: "22032 Dockton Rd SW, Vashon, WA", description: "Visit with Savannah & Noah" },
-    { title: "🏡 Molly & Miles", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "TBD", description: "Staying with Molly & Miles" },
+    { title: "🏙️ Seattle — Molly & Miles", start: "2026-07-21", end: "2026-07-23", allDay: true, location: "Hotel 1000, 1000 1st Avenue, Seattle, WA", description: "Nick & Miriam · Hotel 1000 · Conf #40023B18869296" },
     { title: "⛰️ Aspen, CO", start: "2026-07-23", end: "2026-07-28", allDay: true, location: "Aspen, CO", description: "Nick & Miriam · Big Green Sat Jul 25" },
   ]},
   { category: "Key Events", events: [
@@ -49,15 +56,18 @@ const calendarEvents = [
     { title: "🤝 Client Events — Taormina", start: "2026-07-04", end: "2026-07-06", allDay: true, location: "Taormina, Sicily", description: "Client events Fri Jul 4 and Sat Jul 5" },
     { title: "🤝 Client Events — Sardinia", start: "2026-07-10", end: "2026-07-12", allDay: true, location: "Sardinia, Italy", description: "Client events Fri Jul 10 and Sat Jul 11" },
     { title: "🌿 Big Green — Aspen", start: "20260725T150000Z", end: "20260725T230000Z", allDay: false, location: "Aspen, CO", description: "Nick & Miriam hosting a table" },
+    { title: "⛴️ Water Taxi — Pier 50 → Vashon", start: "20260719T165500Z", end: "20260719T172700Z", allDay: false, location: "Pier 50, Seattle, WA", description: "King County Water Taxi · ~22 min crossing · Other departures: 11:15am, 12:45pm, 2:45pm, 3:55pm, 5:10pm, 6:30pm · Return from Vashon: 10:35am, 12:00pm, 1:30pm, 3:20pm, 4:30pm, 5:50pm, 7:05pm" },
   ]},
 ];
 
 const itinerary = [
-  { date: "Tue, Jun 2", location: "Denver → Los Angeles", icon: "✈️", type: "travel", items: [
-    { label: "UA 2791 · DEN 7:43pm → LAX 9:18pm · United First · Seat 3F", tag: "NICK · LX1C9J", tagColor: "#5b8fa8" },
+  { date: "Mon, Jun 1", location: "Los Angeles → Denver, CO", icon: "✈️", type: "travel", items: [
+    { label: "DL 1729 · LAX 8:14pm → DEN 11:28pm · Seat 3A · Delta First Extra · Nonstop", tag: "NICK · GS34NP", tagColor: "#5b8fa8" },
+    { label: "Check in: Thompson Denver, by Hyatt · 3pm · 1616 Market St", tag: "✓ #40023B19168977", tagColor: "#2d6a4f" },
   ]},
-  { date: "Fri, Jun 5", location: "Los Angeles → Denver", icon: "✈️", type: "travel", items: [
-    { label: "DL 2148 · LAX T3 8:50am → DEN 12:19pm · Main Classic · Seat 14A · Airbus A319", tag: "NICK · JJWPVK", tagColor: "#5b8fa8" },
+  { date: "Tue, Jun 2", location: "Denver, CO → Los Angeles", icon: "🏙️", type: "travel", items: [
+    { label: "Thompson Denver checkout 11am" },
+    { label: "DL 2176 · DEN → LAX · Evening departure", tag: "NICK · GS34NP", tagColor: "#5b8fa8" },
   ]},
   { date: "Wed, Jun 24", location: "Los Angeles → Minneapolis → Amsterdam", icon: "✈️", type: "travel", items: [
     { label: "DL 914 · LAX 12:35pm → MSP 6:13pm · Seat 2D · Delta First", tag: "NICK · G4DQXX", tagColor: "#5b8fa8" },
@@ -81,7 +91,7 @@ const itinerary = [
   ]},
   { date: "Mon, Jun 29", location: "Corfu → Athens (Nick & Miriam) | Team → Taormina", icon: "✈️", type: "travel", items: [
     { label: "Dreams Corfu checkout 11am" },
-    { label: "Nick & Miriam: Fly CFU → ATH" },
+    { label: "Nick & Miriam: Fly CFU → ATH (Aegean, Sky Express, or Volotea)", tag: "BOOK", tagColor: "#e8a735" },
     { label: "Check in: Monument Athens · Sepia room · 3pm", tag: "✓ #48859741", tagColor: "#2d6a4f" },
     { label: "Team: Fly CFU → CTA → Villa Don Giovanni, Taormina", tag: "✓ #6775.843.228", tagColor: "#2d6a4f" },
   ]},
@@ -93,7 +103,7 @@ const itinerary = [
   { date: "Wed, Jul 1", location: "Athens → Taormina, Sicily", icon: "✈️", type: "travel", items: [
     { label: "Morning: Ancient Agora or Monastiraki market" },
     { label: "Monument Athens checkout 11am" },
-    { label: "Fly ATH → CTA → Taormina" },
+    { label: "Fly ATH → CTA (ITA, Ryanair, or Aegean)", tag: "BOOK", tagColor: "#e8a735" },
     { label: "Join team at Villa Don Giovanni", tag: "✓ #6775.843.228", tagColor: "#2d6a4f" },
   ]},
   { date: "Thu, Jul 2", location: "Taormina, Sicily", icon: "🌋", type: "free", items: [{ label: "Available — Taormina / Mt. Etna" }]},
@@ -102,7 +112,7 @@ const itinerary = [
   { date: "Sun, Jul 5", location: "Taormina, Sicily", icon: "🤝", type: "event", items: [{ label: "Client events (full day)", tag: "WORK" }]},
   { date: "Mon, Jul 6", location: "Taormina → Sardinia", icon: "✈️", type: "travel", items: [
     { label: "Villa Don Giovanni checkout 8–10am" },
-    { label: "Fly CTA → OLB/Sardinia" },
+    { label: "Fly CTA → OLB/Sardinia (Ryanair, ITA, or Delta)", tag: "BOOK", tagColor: "#e8a735" },
     { label: "Check in: Villa Cala Bitta, Arzachena · 5–8pm", tag: "✓ #5060.372.552", tagColor: "#2d6a4f" },
   ]},
   { date: "Tue, Jul 7", location: "Sardinia", icon: "🌊", type: "leisure", items: [{ label: "Noto day trip or explore Sardinia" }]},
@@ -121,39 +131,44 @@ const itinerary = [
     { label: "DL 500 · ATL → LAX 7:30pm · Premium Select", tag: "NICK · G4RYXA", tagColor: "#5b8fa8" },
     { label: "Arrive home LAX ~7:30pm" },
   ]},
-  { date: "Mon, Jul 13", location: "Los Angeles → Seattle → Orcas Island, WA", icon: "✈️", type: "travel", items: [
+  { date: "Mon, Jul 13", location: "Los Angeles → Seattle → Orcas Island, WA", icon: "⛴️", type: "travel", items: [
     { label: "DL 1045 · LAX 9:45am → SEA 12:30pm", tag: "NICK & MIRIAM · JMFNIL", tagColor: "#9b5bb5" },
     { label: "Kenmore Air M5 6440 · Boeing Field (BFI) 1:30pm → Eastsound (ESD) 2:10pm", tag: "✓ 004Y5F", tagColor: "#2d6a4f" },
     { label: "Arrive Orcas Island 2:10pm · Family vacation begins" },
     { label: "Orcas Island accommodation", tag: "✓ BOOKED", tagColor: "#2d6a4f" },
   ]},
-  { date: "Tue, Jul 14", location: "Orcas Island, WA", icon: "🌲", type: "leisure", items: [{ label: "Family vacation — Orcas Island" }]},
-  { date: "Wed, Jul 15", location: "Orcas Island, WA", icon: "🌲", type: "leisure", items: [{ label: "Family vacation — Orcas Island" }]},
+  { date: "Tue–Wed, Jul 14–15", location: "Orcas Island, WA", icon: "🌲", type: "leisure", items: [{ label: "Family vacation — Orcas Island" }]},
   { date: "Thu, Jul 16", location: "Orcas Island → Seattle → Paris", icon: "✈️", type: "travel", items: [
-    { label: "Kenmore Air M5 6440 · Eastsound (ESD) 2:25pm → Boeing Field (BFI) 3:30pm", tag: "NICK · 004Y5E", tagColor: "#5b8fa8" },
-    { label: "DL 80 · SEA 6:35pm → Paris CDG (arrives Fri 1:50pm) · Delta One Classic · Seat 2J", tag: "NICK · HBS2FX", tagColor: "#5b8fa8" },
+    { label: "Kenmore Air · ESD → BFI 2:25pm (depart Orcas early afternoon)" },
+    { label: "DL 80 · SEA 6:35pm → CDG 1:50pm+1 · Delta One Classic · Seat 2J", tag: "NICK · HBS2FX", tagColor: "#5b8fa8" },
   ]},
-  { date: "Fri, Jul 17", location: "Paris, France", icon: "🇫🇷", type: "event", items: [
-    { label: "Arrive Paris CDG 1:50pm" },
-    { label: "Work commitments", tag: "WORK" },
+  { date: "Fri, Jul 17", location: "Paris, France", icon: "🗼", type: "leisure", items: [
+    { label: "Arrive CDG 1:50pm" },
+    { label: "Paris — full day" },
   ]},
   { date: "Sat, Jul 18", location: "Paris → Seattle → Orcas Island", icon: "✈️", type: "travel", items: [
-    { label: "DL 8764 (Air France) · CDG 10:10am → SEA 11:15am · Premium · Seat TBD", tag: "NICK · HBS2FX", tagColor: "#5b8fa8" },
-    { label: "Kenmore Air M5 6440 · Boeing Field (BFI) 1:30pm → Eastsound (ESD) 2:10pm", tag: "NICK · 004Y5E", tagColor: "#2d6a4f" },
-    { label: "Back on Orcas 2:10pm ✓" },
+    { label: "DL 8764 (AF) · CDG 10:10am → SEA 11:15am · Air France Premium", tag: "NICK · HBS2FX", tagColor: "#5b8fa8" },
+    { label: "Kenmore Air · BFI 1:30pm → ESD 2:10pm · Back on Orcas" },
   ]},
   { date: "Sun, Jul 19", location: "Orcas Island → Vashon Island, WA", icon: "⛴️", type: "travel", items: [
     { label: "Visit Savannah & Noah · 22032 Dockton Rd SW, Vashon, WA" },
+    { label: "King County Water Taxi — Pier 50 (Seattle) → Vashon · ~22 min crossing" },
+    { label: "Departs Pier 50: 9:55am · 11:15am · 12:45pm · 2:45pm · 3:55pm · 5:10pm · 6:30pm" },
+    { label: "Departs Vashon: 10:35am · 12:00pm · 1:30pm · 3:20pm · 4:30pm · 5:50pm · 7:05pm", tag: "WATER TAXI", tagColor: "#5b8fa8" },
   ]},
   { date: "Mon, Jul 20", location: "Vashon Island — Savannah & Noah", icon: "🏡", type: "leisure", items: [
     { label: "Full day with Savannah & Noah" },
   ]},
-  { date: "Tue, Jul 21", location: "→ Molly & Miles", icon: "🏡", type: "leisure", items: [
-    { label: "Travel to Molly & Miles", tag: "CONFIRM ADDRESS", tagColor: "#e06b3a" },
+  { date: "Tue, Jul 21", location: "→ Seattle, WA — Hotel 1000", icon: "🌆", type: "travel", items: [
+    { label: "Travel to Seattle · Hotel 1000, 1000 1st Ave", tag: "✓ #40023B18869296", tagColor: "#2d6a4f" },
+    { label: "Staying with Molly & Miles · Check-in 4pm" },
+    { label: "Hyatt free night + taxes + $30 destination fee" },
   ]},
-  { date: "Wed, Jul 22", location: "Molly & Miles", icon: "🏡", type: "leisure", items: [{ label: "Full day with Molly & Miles" }]},
-  { date: "Thu, Jul 23", location: "→ Aspen, CO", icon: "⛰️", type: "travel", items: [
-    { label: "Fly SEA → ASE via DEN or SLC", tag: "BOOK FLIGHT", tagColor: "#e8a735" },
+  { date: "Wed, Jul 22", location: "Seattle, WA", icon: "🌆", type: "leisure", items: [{ label: "Full day in Seattle with Molly & Miles" }]},
+  { date: "Thu, Jul 23", location: "Seattle → Los Angeles → Aspen, CO", icon: "⛰️", type: "travel", items: [
+    { label: "Hotel 1000 checkout 11am" },
+    { label: "DL 2914 · SEA 12:35pm → LAX 3:23pm · Delta Main Classic", tag: "NICK & MIRIAM · JP7GGW", tagColor: "#9b5bb5" },
+    { label: "DL 3704 · LAX 5:12pm → ASE 8:25pm · Delta Connection (SkyWest)", tag: "NICK & MIRIAM · JP7GGW", tagColor: "#9b5bb5" },
     { label: "Check in: Aspen hotel", tag: "BOOK HOTEL", tagColor: "#e8a735" },
   ]},
   { date: "Fri, Jul 24", location: "Aspen, CO", icon: "🏔️", type: "free", items: [{ label: "Available — Aspen" }]},
@@ -164,18 +179,18 @@ const itinerary = [
 ];
 
 const flights = [
-  { direction: "DEN → LAX", date: "Tue Jun 2", conf: "LX1C9J", pax: "NICK ONLY", status: "confirmed",
-    segments: [{ flight: "UA 2791", route: "DEN → LAX", depart: "7:43pm", arrive: "9:18pm", cabin: "United First", seat: "3F" }],
-    notes: "United First · Seat 3F · $514.40" },
-  { direction: "LAX → DEN", date: "Fri Jun 5", conf: "JJWPVK", pax: "NICK ONLY", status: "confirmed",
-    segments: [{ flight: "DL 2148", route: "LAX → DEN", depart: "8:50am", arrive: "12:19pm", cabin: "Main Classic", seat: "14A" }],
-    notes: "Terminal 3 LAX · Airbus A319 · Upgrade requested (on standby list)" },
+  { direction: "LAX → DENVER", date: "Mon Jun 1", conf: "GS34NP", pax: "NICK ONLY", status: "confirmed",
+    segments: [{ flight: "DL 1729", route: "LAX → DEN", depart: "8:14pm", arrive: "11:28pm", cabin: "Delta First Extra", seat: "3A" }],
+    notes: "Nonstop · Airbus A319 · LAX T3 Gate 31B · DEN Terminal A45" },
+  { direction: "DENVER → LAX", date: "Tue Jun 2", conf: "GS34NP", pax: "NICK ONLY", status: "confirmed",
+    segments: [{ flight: "DL 2176", route: "DEN → LAX", depart: "TBD evening", arrive: "TBD", cabin: "Main Cabin", seat: "—" }],
+    notes: "Return leg · same conf GS34NP" },
   { direction: "OUTBOUND", date: "Wed Jun 24 → Thu Jun 25", conf: "G4DQXX", pax: "NICK ONLY", status: "confirmed",
     segments: [
-      { flight: "DL 914",  route: "LAX → MSP",  depart: "12:35pm", arrive: "6:13pm",    cabin: "Delta First",   seat: "2D" },
-      { flight: "DL 162",  route: "MSP → AMS",  depart: "7:50pm",  arrive: "11:10am+1", cabin: "Delta One",     seat: "5J" },
-      { flight: "DL 9185", route: "AMS → ATH",  depart: "12:15pm", arrive: "4:30pm",    cabin: "KLM Economy",   seat: "8F" },
-      { flight: "A3 286",  route: "ATH → CFU",  depart: "6:20pm",  arrive: "7:20pm",    cabin: "Aegean Economy",seat: "12A (XL)" },
+      { flight: "DL 914",  route: "LAX → MSP",  depart: "12:35pm", arrive: "6:13pm",    cabin: "Delta First",    seat: "2D" },
+      { flight: "DL 162",  route: "MSP → AMS",  depart: "7:50pm",  arrive: "11:10am+1", cabin: "Delta One",      seat: "5J" },
+      { flight: "DL 9185", route: "AMS → ATH",  depart: "12:15pm", arrive: "4:30pm",    cabin: "KLM Economy",    seat: "8F" },
+      { flight: "A3 286",  route: "ATH → CFU",  depart: "6:20pm",  arrive: "7:20pm",    cabin: "Aegean Economy", seat: "12A (XL)" },
     ], notes: "Aegean A3 286 confirmed separately (8SKKV9). Arrives Corfu 7:20pm Jun 25 ✓" },
   { direction: "SARDINIA → ROME", date: "Sun Jul 12", conf: "N6358P", pax: "NICK ONLY", status: "confirmed",
     segments: [{ flight: "XZ 2510", route: "AHO → FCO T1", depart: "7:10am", arrive: "8:10am", cabin: "Economy", seat: "1C" }],
@@ -187,65 +202,65 @@ const flights = [
     ], notes: "GUC opportunity on FCO→ATL for Delta One upgrade." },
   { direction: "LAX → SEATTLE", date: "Mon Jul 13", conf: "JMFNIL", pax: "NICK & MIRIAM", status: "confirmed",
     segments: [{ flight: "DL 1045", route: "LAX → SEA", depart: "9:45am", arrive: "12:30pm", cabin: "SkyMiles Award", seat: "—" }],
-    notes: "Arrive SeaTac 12:30pm → 10 min to Boeing Field → Kenmore M5 6440 departs BFI 1:30pm ✓ timing works" },
+    notes: "Arrive Seattle 12:30pm → Kenmore BFI 1:30pm → Orcas Island 2:10pm" },
   { direction: "BOEING FIELD → ORCAS ISLAND", date: "Mon Jul 13", conf: "004Y5F", pax: "NICK & MIRIAM", status: "confirmed",
     segments: [{ flight: "M5 6440", route: "BFI → ESD", depart: "1:30pm", arrive: "2:10pm", cabin: "Kenmore Air", seat: "—" }],
-    notes: "Boeing Field (BFI) · 7277 Perimeter Rd S, Seattle · Arrive Eastsound Airport, Orcas Island · $575.96 total · Nick & Miriam" },
+    notes: "Boeing Field (BFI) · 7277 Perimeter Rd S, Seattle · Arrive Eastsound Airport, Orcas Island · $575.96 total" },
   { direction: "ORCAS → PARIS", date: "Thu Jul 16", conf: "HBS2FX", pax: "NICK ONLY", status: "confirmed",
     segments: [{ flight: "DL 80", route: "SEA → CDG", depart: "6:35pm", arrive: "1:50pm+1", cabin: "Delta One Classic", seat: "2J" }],
-    notes: "Depart Orcas via Kenmore ESD→BFI 2:25pm first. Arrive Paris CDG Fri Jul 17 1:50pm. $5,581.33 total." },
-  { direction: "PARIS → ORCAS", date: "Sat Jul 18", conf: "HBS2FX", pax: "NICK ONLY", status: "confirmed",
-    segments: [{ flight: "DL 8764", route: "CDG → SEA", depart: "10:10am", arrive: "11:15am", cabin: "Air France Premium", seat: "TBD" }],
+    notes: "Depart Orcas via Kenmore ESD→BFI 2:25pm first. Arrive Paris CDG Fri Jul 17 1:50pm." },
+  { direction: "PARIS → SEATTLE", date: "Sat Jul 18", conf: "HBS2FX", pax: "NICK ONLY", status: "confirmed",
+    segments: [{ flight: "DL 8764 (AF)", route: "CDG → SEA", depart: "10:10am", arrive: "11:15am", cabin: "Air France Premium", seat: "TBD" }],
     notes: "Operated by Air France. Arrive SEA 11:15am → Kenmore BFI→ESD 1:30pm → back on Orcas 2:10pm." },
-  { direction: "ORCAS ⇄ SEATTLE (EUROPE TURNAROUND)", date: "Thu Jul 16 out · Sat Jul 18 return", conf: "004Y5E", pax: "NICK ONLY", status: "confirmed",
+  { direction: "SEA → LAX → ASPEN", date: "Thu Jul 23", conf: "JP7GGW", pax: "NICK & MIRIAM", status: "confirmed",
     segments: [
-      { flight: "M5 6440", route: "ESD → BFI (Jul 16)", depart: "2:25pm", arrive: "3:30pm", cabin: "Kenmore Air", seat: "—" },
-      { flight: "M5 6440", route: "BFI → ESD (Jul 18)", depart: "1:30pm", arrive: "2:10pm", cabin: "Kenmore Air", seat: "—" },
-    ],
-    notes: "Nick only · $575.96 · Jul 16 ESD→BFI to catch DL 80 to Paris · Jul 18 BFI→ESD return from Paris" },
+      { flight: "DL 2914", route: "SEA → LAX", depart: "12:35pm", arrive: "3:23pm", cabin: "Delta Main Classic", seat: "TBD" },
+      { flight: "DL 3704", route: "LAX → ASE", depart: "5:12pm",  arrive: "8:25pm", cabin: "Delta Connection",   seat: "TBD" },
+    ], notes: "SkyWest operated LAX→ASE. $349.21 · Select seats on Delta app." },
   { direction: "PENDING", date: "Mon Jun 29", conf: null, pax: "NICK & MIRIAM", status: "pending",
     segments: [{ flight: "TBD", route: "CFU → ATH", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Nick & Miriam to Athens for Monument check-in." },
+    notes: "Options: Aegean, Sky Express, Volotea · Nick & Miriam to Athens for Monument check-in." },
   { direction: "PENDING", date: "Wed Jul 1", conf: null, pax: "NICK & MIRIAM", status: "pending",
     segments: [{ flight: "TBD", route: "ATH → CTA", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Nick & Miriam Athens → Catania → Taormina." },
+    notes: "Options: ITA, Ryanair, Aegean · Nick & Miriam Athens → Catania → Taormina." },
   { direction: "PENDING", date: "Mon Jul 6", conf: null, pax: "FULL TEAM", status: "pending",
     segments: [{ flight: "TBD", route: "CTA → OLB", depart: "TBD", arrive: "TBD", cabin: "Economy", seat: "—" }],
-    notes: "Full team Catania → Olbia/Sardinia." },
-  { direction: "PENDING", date: "Thu Jul 23", conf: null, pax: "NICK & MIRIAM", status: "pending",
-    segments: [{ flight: "TBD", route: "→ ASE", depart: "TBD", arrive: "TBD", cabin: "TBD", seat: "—" }],
-    notes: "Vashon/Seattle → Aspen via DEN or SLC." },
+    notes: "Options: Ryanair, ITA, Volotea · Full team Catania → Olbia/Sardinia." },
 ];
 
 const hotels = [
+  { name: "Thompson Denver, by Hyatt", who: "Nick", location: "1616 Market Street, Denver, CO 80202", checkin: "Mon Jun 1 · 3:00pm", checkout: "Tue Jun 2 · 11:00am", nights: 1, conf: "#40023B19168977", price: "—", status: "confirmed", cancel: "—", notes: "World of Hyatt · +1 303-572-1321" },
   { name: "Folies Corfu Town Hotel Apartments", who: "TEAM", location: "Alepou Xabai, Corfu, Greece", checkin: "Thu Jun 25 · 3pm", checkout: "Mon Jun 29 · 11am", nights: 4, conf: "#5071.167.071 · PIN 1546", price: "~US$3,039 (5 studios)", status: "confirmed", cancel: "⚠️ NON-REFUNDABLE", notes: "Nick has a studio here but staying at Dreams instead." },
   { name: "Dreams Corfu Resort & Spa", who: "Nick & Miriam", location: "Gouvia, Corfu, GR 49100", checkin: "Fri Jun 26 · 3pm", checkout: "Mon Jun 29 · 11am", nights: 3, conf: "#42609271", price: "€598/night · All-inclusive", status: "confirmed", cancel: "1 day prior", notes: "Bungalow Garden View · Hyatt Discoverist" },
   { name: "Monument Athens (Mr & Mrs Smith)", who: "Nick & Miriam", location: "Kalamida 11, Athens, GR 10554", checkin: "Mon Jun 29 · 3pm", checkout: "Wed Jul 1 · 11am", nights: 2, conf: "#48859741", price: "€518/night · Breakfast included", status: "confirmed", cancel: "⚠️ 100% if cancelled within 7 days", notes: "Sepia room" },
   { name: "Villa Don Giovanni Taormina Mare", who: "Nick + Team (5 adults)", location: "Via Nazionale - Mazzarò, 98039 Taormina", checkin: "Mon Jun 29 · 3–8pm", checkout: "Mon Jul 6 · 8–10am", nights: 7, conf: "#6775.843.228 · PIN 4148", price: "~US$11,527 · No meals", status: "confirmed", cancel: "50% on cancel", notes: "⚠️ Cash on arrival · Call 72hrs before: +39 0942 24536 · €500 deposit · Nick arrives Jul 1" },
   { name: "Villa Cala Bitta, Sardinia", who: "Nick + Team (5 adults)", location: "Vaddi di Jatta 33, 07021 Arzachena", checkin: "Mon Jul 6 · 5–8pm", checkout: "Mon Jul 13 · 10am", nights: 7, conf: "#5060.372.552 · PIN 1915", price: "~US$12,329 · No meals", status: "confirmed", cancel: "⚠️ 100% after Jun 21", notes: "Private pool · Sea view · Costa Smeralda" },
-  { name: "Orcas Island accommodation", who: "Nick, Miriam + Family", location: "Orcas Island, WA", checkin: "Mon Jul 13", checkout: "Sun Jul 19", nights: 6, conf: "Booked", price: "—", status: "confirmed", cancel: "—", notes: "Family vacation" },
-  { name: "Aspen hotel", who: "Nick & Miriam", location: "Aspen, CO", checkin: "Thu Jul 23", checkout: "Mon Jul 27", nights: 4, conf: "—", price: "—", status: "pending", cancel: "—", notes: "Big Green Sat Jul 25" },
+  { name: "Orcas Island accommodation", who: "Nick, Miriam + Family", location: "Orcas Island, WA", checkin: "Mon Jul 13", checkout: "Sun Jul 19", nights: 6, conf: "Booked", price: "—", status: "confirmed", cancel: "—", notes: "Family vacation · Nick departs Jul 16 for Paris, returns Jul 18" },
+  { name: "Hotel 1000 (Unbound Collection by Hyatt)", who: "Nick & Miriam", location: "1000 1st Avenue, Seattle, WA 98104", checkin: "Tue Jul 21 · 4:00pm", checkout: "Thu Jul 23 · 11:00am", nights: 2, conf: "#40023B18869296", price: "Hyatt free night + taxes + $30 destination fee", status: "confirmed", cancel: "11:59pm night before or 1-night fee", notes: "1 King Bed · 390sqft City View · Staying with Molly & Miles · +1 (206) 957-1000" },
+  { name: "Aspen hotel", who: "Nick & Miriam", location: "Aspen, CO", checkin: "Thu Jul 23", checkout: "Mon Jul 27", nights: 4, conf: "—", price: "—", status: "pending", cancel: "—", notes: "Big Green Sat Jul 25 · Options: Hotel Jerome, Little Nell, Limelight" },
 ];
 
 const actionItems = [
-  { status: "pending", label: "Orcas Island Jul 19 departure — drive off with family or fly out?" },
+  { status: "pending", label: "⚑ ROUTING DECISION: Jul 12 return | OPT A (Jul 12): AF 10:10am → LAX 4pm → SEA 5:30pm → ferry → sleep Orcas | OPT B1 (Jul 13): LAX 9:45am → Kenmore direct 1:30pm → island 2:10pm ✓ CURRENT PLAN | Maximize total Orcas time" },
   { status: "pending", label: "Online check-in for XZ2510 (3hrs before Jul 12 departure) — €35 fee at airport" },
-  { status: "pending", label: "Flight: SEA → ASE (Thu Jul 23) · Nick & Miriam" },
-  { status: "pending", label: "Aspen hotel (Jul 23–27)" },
-  { status: "pending", label: "Confirm Molly & Miles address (Jul 21–22)" },
-  { status: "pending", label: "Flight: CFU → ATH (Jun 29) — Nick & Miriam" },
-  { status: "pending", label: "Flight: ATH → CTA (Jul 1) — Nick & Miriam" },
-  { status: "pending", label: "Flight: CTA → OLB (Jul 6) — full team" },
+  { status: "pending", label: "Aspen hotel (Jul 23–27) — Jerome, Little Nell, or Limelight" },
+  { status: "pending", label: "Select seats: DL 2914 + DL 3704 (Aspen) · Conf JP7GGW" },
+  { status: "pending", label: "Flight: CFU → ATH (Jun 29) — Nick & Miriam · Aegean/Sky Express/Volotea" },
+  { status: "pending", label: "Flight: ATH → CTA (Jul 1) — Nick & Miriam · ITA/Ryanair/Aegean" },
+  { status: "pending", label: "Flight: CTA → OLB (Jul 6) — full team · Ryanair/ITA/Volotea" },
   { status: "pending", label: "Call Villa Don Giovanni 72hrs before Jun 29: +39 0942 24536" },
   { status: "waiting", label: "Team dinner restaurant — awaiting Austin (Jun 28)" },
-  { status: "done",    label: "Routing decision: Jul 13 B1 — Kenmore Air M5 6440 BFI→ESD 1:30pm · Conf 004Y5F · Nick & Miriam" },
-  { status: "done",    label: "Europe turnaround Jul 16-18 — DL 80 SEA→CDG + DL8764 CDG→SEA · Conf HBS2FX · $5,581.33 · Nick only" },
-  { status: "done",    label: "Kenmore 004Y5E — ESD→BFI Jul 16 2:25pm + BFI→ESD Jul 18 1:30pm · Nick only · $575.96" },
-  { status: "done",    label: "UA 2791 DEN→LAX Jun 2 7:43pm · United First · Seat 3F · Conf LX1C9J" },
-  { status: "done",    label: "DL 2148 LAX→DEN Jun 5 8:50am · Seat 14A · Conf JJWPVK" },
+  { status: "done",    label: "DL 1729 LAX→DEN Jun 1 · Seat 3A · Delta First Extra · Conf GS34NP" },
+  { status: "done",    label: "DL 2176 DEN→LAX Jun 2 · Conf GS34NP" },
+  { status: "done",    label: "Thompson Denver Jun 1–2 · Conf #40023B19168977" },
+  { status: "done",    label: "DL 2914 + DL 3704 SEA→LAX→ASE Jul 23 · Conf JP7GGW · $349.21" },
+  { status: "done",    label: "DL 80 SEA→CDG Jul 16 · Seat 2J · Delta One Classic · Conf HBS2FX" },
+  { status: "done",    label: "DL 8764 (AF) CDG→SEA Jul 18 · Air France Premium · Conf HBS2FX" },
+  { status: "done",    label: "Kenmore Air M5 6440 BFI→ESD Jul 13 · Conf 004Y5F · $575.96" },
+  { status: "done",    label: "Hotel 1000 Seattle Jul 21–23 · Conf #40023B18869296 · Hyatt free night" },
   { status: "done",    label: "Matsuhisa · Jul 9 · 8:30–10:30pm · Conf OLBLC-7LP3473BD2KD" },
   { status: "done",    label: "Savannah & Noah · 22032 Dockton Rd SW, Vashon Island, WA" },
-  { status: "done",    label: "DL 1045 LAX→SEA Jul 13 · Conf JMFNIL · Nick & Miriam" },
+  { status: "done",    label: "DL 1045 LAX→SEA Jul 13 · 9:45am · Conf JMFNIL · Nick & Miriam" },
   { status: "done",    label: "Aegean A3 286 ATH→CFU Jun 25 · Seat 12A · Conf 8SKKV9" },
   { status: "done",    label: "Aeroitalia XZ2510 AHO→FCO Jul 12 · Seat 1C · Conf N6358P" },
   { status: "done",    label: "Return DL 215 + DL 500 FCO→ATL→LAX Jul 12 · Conf G4RYXA" },
@@ -279,69 +294,93 @@ export default function App() {
   const [unlocked, setUnlocked] = useState(false);
   const [pwError, setPwError] = useState(false);
   const [calCat, setCalCat] = useState(calendarEvents[0].category);
+  const [showLegend, setShowLegend] = useState(false);
   const toggle = (i) => setExpanded(expanded === i ? null : i);
   const pendingCount = actionItems.filter(a => a.status !== "done").length;
   const tryUnlock = () => { if (pwInput === PRIVATE_PW) { setUnlocked(true); setPwError(false); } else { setPwError(true); setPwInput(""); } };
+
+  const todayStr = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
+  const isToday = (dateStr) => dateStr.startsWith(todayStr.split(",")[0]) && dateStr.includes(todayStr.split(" ")[1]);
+
   const tabs = [
-    { key: "itinerary", label: "Itinerary" },
+    { key: "itinerary", label: "Trips" },
     { key: "flights",   label: "Flights" },
     { key: "hotels",    label: "Hotels" },
-    { key: "calendar",  label: "📅 Calendar" },
-    { key: "actions",   label: `Actions (${pendingCount})` },
-    { key: "private",   label: "🔒 Private" },
+    { key: "calendar",  label: "Cal" },
+    { key: "actions",   label: `Tasks (${pendingCount})` },
+    { key: "private",   label: "🔒" },
   ];
 
   return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", padding:"36px 16px", color:"#e2e8f0" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap'); *{box-sizing:border-box} .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(3px)} .ir{animation:fi .15s ease} .tb{cursor:pointer;border:none;background:none;transition:all .15s} .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8} @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}`}</style>
+    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:"#0a0c10", minHeight:"100vh", color:"#e2e8f0" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap'); *{box-sizing:border-box} .dc{transition:all .2s;cursor:pointer} .dc:hover{transform:translateX(3px)} .ir{animation:fi .15s ease} .tb{cursor:pointer;border:none;background:none;transition:all .15s} .cb{cursor:pointer;border:none;transition:all .15s;text-decoration:none} .cb:hover{opacity:.8} @keyframes fi{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}} .today-glow{box-shadow:0 0 0 2px #52b78866,0 0 16px #52b78833!important}`}</style>
 
-      <div style={{ maxWidth:700, margin:"0 auto 24px" }}>
-        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:8 }}>JUNE – JULY 2026</div>
-        <h1 style={{ fontFamily:"'DM Serif Display',serif", fontSize:"clamp(28px,5vw,44px)", fontWeight:400, margin:"0 0 4px", color:"#f0f4f8" }}>Travel Tracker</h1>
-        <div style={{ fontFamily:"'DM Serif Display',serif", fontStyle:"italic", color:"#7090a8", fontSize:15, marginBottom:18 }}>Nick & Miriam · Europe + PNW + Aspen</div>
-        <div style={{ display:"flex", gap:2, borderBottom:"1px solid #1a2030", flexWrap:"wrap" }}>
-          {tabs.map(t => (
-            <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
-              style={{ padding:"8px 14px", fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#4a9eff":"#4a5568", borderBottom: activeTab===t.key?"2px solid #4a9eff":"2px solid transparent", marginBottom:-1 }}>
-              {t.label}
-            </button>
-          ))}
+      {/* Sticky nav */}
+      <div style={{ position:"sticky", top:0, zIndex:100, background:"#080a0e", borderBottom:"1px solid #1a2030", padding:"0 16px" }}>
+        <div style={{ maxWidth:700, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", height:52 }}>
+          <div style={{ fontFamily:"'DM Serif Display',serif", fontSize:20, color:"#f0f4f8", letterSpacing:"-0.01em" }}>
+            N<span style={{ fontStyle:"italic", color:"#52b788" }}>&</span>M Travel
+          </div>
+          <div style={{ display:"flex", gap:1 }}>
+            {tabs.map(t => (
+              <button key={t.key} className="tb" onClick={() => setActiveTab(t.key)}
+                style={{ padding:"6px 11px", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", color: activeTab===t.key?"#52b788":"#4a5568", borderBottom: activeTab===t.key?"2px solid #52b788":"2px solid transparent", paddingBottom: activeTab===t.key?"4px":"6px" }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth:700, margin:"0 auto" }}>
+      <div style={{ maxWidth:700, margin:"0 auto", padding:"24px 16px" }}>
 
         {activeTab === "itinerary" && (
-          <div style={{ position:"relative" }}>
-            <div style={{ position:"absolute", left:22, top:0, bottom:0, width:1, background:"linear-gradient(to bottom,#1e3a5f,#2d1a4a,#0a0c10)", pointerEvents:"none" }} />
-            {itinerary.map((day, i) => {
-              const s = typeStyles[day.type]||typeStyles.free; const open = expanded===i;
-              return (
-                <div key={i} className="dc" onClick={() => toggle(i)} style={{ display:"flex", gap:14, marginBottom:5, position:"relative", zIndex:1 }}>
-                  <div style={{ width:44, height:44, minWidth:44, borderRadius:"50%", background:s.bg, border:`1.5px solid ${open?s.accent:"#1e2535"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, boxShadow: open?`0 0 12px ${s.accent}44`:"none" }}>{day.icon}</div>
-                  <div style={{ flex:1, background: open?s.bg:"#0e1116", border:`1px solid ${open?s.accent+"55":"#1a2030"}`, borderRadius:8, padding:"9px 13px" }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:3 }}>
-                      <div>
-                        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:s.accent, letterSpacing:"0.15em", textTransform:"uppercase" }}>{day.date}</span>
-                        <div style={{ fontWeight:500, fontSize:13, marginTop:2, color:"#d0dce8", lineHeight:1.3 }}>{day.location}</div>
-                      </div>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, padding:"2px 6px", borderRadius:3 }}>{s.label}</span>
-                    </div>
-                    {open && (
-                      <div style={{ marginTop:9, borderTop:`1px solid ${s.accent}22`, paddingTop:9 }}>
-                        {day.items.map((item, j) => (
-                          <div key={j} className="ir" style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
-                            <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
-                            {item.label}
-                            {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+          <div>
+            {/* Color legend toggle */}
+            <div style={{ marginBottom:16 }}>
+              <button onClick={() => setShowLegend(!showLegend)} style={{ background:"none", border:"1px solid #1a2030", borderRadius:6, color:"#4a5568", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", padding:"4px 10px", cursor:"pointer" }}>
+                {showLegend ? "HIDE LEGEND ▲" : "COLOR GUIDE ▼"}
+              </button>
+              {showLegend && (
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginTop:10 }}>
+                  {Object.entries(typeStyles).map(([k,s]) => (
+                    <span key={k} style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:s.accent, border:`1px solid ${s.accent}44`, background:s.bg, padding:"3px 8px", borderRadius:3 }}>{s.label}</span>
+                  ))}
                 </div>
-              );
-            })}
+              )}
+            </div>
+            <div style={{ position:"relative" }}>
+              <div style={{ position:"absolute", left:22, top:0, bottom:0, width:1, background:"linear-gradient(to bottom,#1e3a5f,#2d1a4a,#0a0c10)", pointerEvents:"none" }} />
+              {itinerary.map((day, i) => {
+                const s = typeStyles[day.type]||typeStyles.free; const open = expanded===i;
+                const today = isToday(day.date);
+                return (
+                  <div key={i} className="dc" onClick={() => toggle(i)} style={{ display:"flex", gap:14, marginBottom:5, position:"relative", zIndex:1 }}>
+                    <div style={{ width:44, height:44, minWidth:44, borderRadius:"50%", background: today?"#0d1f17":s.bg, border:`1.5px solid ${today?"#52b788":open?s.accent:"#1e2535"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, boxShadow: today?"0 0 12px #52b78866":open?`0 0 12px ${s.accent}44`:"none" }} className={today?"today-glow":""}>{day.icon}</div>
+                    <div style={{ flex:1, background: open?s.bg:"#0e1116", border:`1px solid ${today?"#52b78844":open?s.accent+"55":"#1a2030"}`, borderRadius:8, padding:"9px 13px", borderLeft: today?`3px solid #52b788`:`1px solid ${open?s.accent+"55":"#1a2030"}` }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:3 }}>
+                        <div>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:today?"#52b788":s.accent, letterSpacing:"0.15em", textTransform:"uppercase" }}>{day.date}{today?" · TODAY":""}</span>
+                          <div style={{ fontWeight:500, fontSize:13, marginTop:2, color:"#d0dce8", lineHeight:1.3 }}>{day.location}</div>
+                        </div>
+                        <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, color:today?"#52b788":s.accent, border:`1px solid ${today?"#52b78844":s.accent+"44"}`, padding:"2px 6px", borderRadius:3 }}>{today?"TODAY":s.label}</span>
+                      </div>
+                      {open && (
+                        <div style={{ marginTop:9, borderTop:`1px solid ${s.accent}22`, paddingTop:9 }}>
+                          {day.items.map((item, j) => (
+                            <div key={j} className="ir" style={{ fontSize:12, color:"#94a3b8", marginBottom:5, lineHeight:1.5 }}>
+                              <span style={{ color:s.accent, marginRight:5, fontSize:9 }}>▸</span>
+                              {item.label}
+                              {item.tag && <span style={tagStyle(item.tagColor)}>{item.tag}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -364,12 +403,14 @@ export default function App() {
                 }
               </div>
               {f.segments.map((seg, j) => (
-                <div key={j} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:7, flexWrap:"wrap" }}>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:acc, minWidth:50 }}>{seg.flight}</span>
-                  <span style={{ fontSize:14, fontWeight:600, color:"#e0e8f0" }}>{seg.route}</span>
-                  <span style={{ fontSize:11, color:"#7090a8" }}>{seg.depart} → {seg.arrive}</span>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#0e1820", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
-                  {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#7090a8" }}>Seat {seg.seat}</span>}
+                <div key={j} style={{ marginBottom:7 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:acc, minWidth:55 }}>{seg.flight}</span>
+                    <span style={{ fontSize:14, fontWeight:600, color:"#e0e8f0" }}>{seg.route}</span>
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#5b8fa8", background:"#0e1820", padding:"2px 6px", borderRadius:3 }}>{seg.cabin}</span>
+                    {seg.seat!=="—" && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#7090a8" }}>Seat {seg.seat}</span>}
+                  </div>
+                  <div style={{ fontSize:11, color:"#7090a8", marginLeft:63, marginTop:2 }}>{seg.depart} → {seg.arrive}</div>
                 </div>
               ))}
               <div style={{ fontSize:11, color:"#5a6a7a", marginTop:6, paddingTop:6, borderTop:`1px solid ${acc}18`, fontStyle:"italic" }}>{f.notes}</div>
@@ -407,22 +448,22 @@ export default function App() {
         {activeTab === "calendar" && (
           <div>
             <div style={{ fontSize:13, color:"#5a6a7a", marginBottom:18, lineHeight:1.6 }}>
-              Click any event to open Google Calendar pre-filled and ready to add. Choose a category:
+              Click any event to open Google Calendar pre-filled and ready to add.
             </div>
             <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
               {calendarEvents.map(cat => (
                 <button key={cat.category} onClick={() => setCalCat(cat.category)}
                   style={{ padding:"6px 14px", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer",
-                    background: calCat===cat.category?"#4a9eff22":"#0e1116",
-                    color: calCat===cat.category?"#4a9eff":"#4a5568",
-                    border:`1px solid ${calCat===cat.category?"#4a9eff":"#1a2030"}`, borderRadius:6 }}>
+                    background: calCat===cat.category?"#52b78822":"#0e1116",
+                    color: calCat===cat.category?"#52b788":"#4a5568",
+                    border:`1px solid ${calCat===cat.category?"#52b788":"#1a2030"}`, borderRadius:6 }}>
                   {cat.category}
                 </button>
               ))}
             </div>
             {calendarEvents.find(c => c.category===calCat)?.events.map((ev, i) => (
               <a key={i} href={gCal(ev)} target="_blank" rel="noopener noreferrer" className="cb"
-                style={{ display:"block", background:"#0e1116", border:"1px solid #1a2030", borderLeft:"3px solid #4a9eff", borderRadius:8, padding:"12px 16px", marginBottom:8 }}>
+                style={{ display:"block", background:"#0e1116", border:"1px solid #1a2030", borderLeft:"3px solid #52b788", borderRadius:8, padding:"12px 16px", marginBottom:8 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:10, flexWrap:"wrap" }}>
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:13, fontWeight:600, color:"#d0dce8", marginBottom:4 }}>{ev.title}</div>
@@ -432,8 +473,8 @@ export default function App() {
                     {ev.location && <div style={{ fontSize:11, color:"#4a5a6a" }}>📍 {ev.location}</div>}
                     {ev.description && <div style={{ fontSize:11, color:"#4a5a6a", marginTop:3, fontStyle:"italic" }}>{ev.description}</div>}
                   </div>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#4a9eff", background:"#0e1f30", border:"1px solid #4a9eff44", padding:"4px 10px", borderRadius:5, whiteSpace:"nowrap" }}>
-                    + Add to Calendar
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#52b788", background:"#0d1f17", border:"1px solid #52b78844", padding:"4px 10px", borderRadius:5, whiteSpace:"nowrap" }}>
+                    + Add
                   </span>
                 </div>
               </a>
@@ -508,15 +549,15 @@ export default function App() {
                     ))}
                   </div>
                 </div>
-                <div style={{ background:"#0a0f16", border:"1px solid #4a9eff44", borderLeft:"3px solid #4a9eff", borderRadius:10, padding:"18px" }}>
-                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.2em", color:"#4a9eff", textTransform:"uppercase", marginBottom:12 }}>💍 The Proposal</div>
+                <div style={{ background:"#0a0f16", border:"1px solid #52b78844", borderLeft:"3px solid #52b788", borderRadius:10, padding:"18px" }}>
+                  <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.2em", color:"#52b788", textTransform:"uppercase", marginBottom:12 }}>💍 The Proposal</div>
                   {[["DATE","TBD"],["LOCATION","TBD"],["DETAILS","TBD"],["RING","TBD"]].map(([k,v]) => (
                     <div key={k} style={{ display:"flex", gap:12, marginBottom:8 }}>
-                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#3a6a9a", minWidth:70 }}>{k}</div>
-                      <div style={{ fontSize:13, color:"#4a6a8a", fontStyle:"italic" }}>{v}</div>
+                      <div style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:"#3a6a5a", minWidth:70 }}>{k}</div>
+                      <div style={{ fontSize:13, color:"#4a7a6a", fontStyle:"italic" }}>{v}</div>
                     </div>
                   ))}
-                  <div style={{ fontSize:11, color:"#2a4a6a", fontStyle:"italic", borderTop:"1px solid #4a9eff18", paddingTop:10, marginTop:4 }}>Tell Claude the details to fill this in.</div>
+                  <div style={{ fontSize:11, color:"#2a4a3a", fontStyle:"italic", borderTop:"1px solid #52b78818", paddingTop:10, marginTop:4 }}>Tell Claude the details to fill this in.</div>
                 </div>
               </div>
             )}
@@ -524,7 +565,7 @@ export default function App() {
         )}
 
       </div>
-      <div style={{ maxWidth:700, margin:"28px auto 0", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>KISLINGER IMPACT COLLECTIVE · SUMMER 2026</div>
+      <div style={{ maxWidth:700, margin:"0 auto", padding:"0 16px 28px", textAlign:"center", fontFamily:"'DM Mono',monospace", fontSize:9, color:"#2d3a4a", letterSpacing:"0.1em" }}>N&M TRAVEL · 2026</div>
     </div>
   );
 }
